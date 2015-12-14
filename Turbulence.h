@@ -27,7 +27,7 @@ typedef struct turb_vecs_var TurbConstVecs;
 
 struct turb_field_var
 {
-  double ex, ey, ez; // velocity components of the field
+  double e_x, e_y, e_z; // velocity components of the field
   double vort_x, vort_y, vort_z; //vorticity components of the field
 };
 
