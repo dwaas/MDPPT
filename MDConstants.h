@@ -1,5 +1,5 @@
-#ifndef MDINPUTFILE_H
-#define MDINPUTFILE_H
+#ifndef MDCONSTANTS_H
+#define MDCONSTANTS_H
 
 typedef struct MDConstants
 {
@@ -36,4 +36,4 @@ Initialize (MDConstants* MDConsts, char argv[]);
 
 extern char work_dir[];
 
-#endif /* MDINPUTFILE_H */
+#endif /* MDCONSTANTS_H */

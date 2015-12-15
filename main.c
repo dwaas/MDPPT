@@ -61,6 +61,16 @@ main(int argc, char *argv[])
 
 //end allocation
 
+//Initialise turb constants
+TurbConstsLoad (
+			K,
+    		turb,
+    		turb_vecs
+			);
+
+
+//initialise turb constants ends
+
 //file reading starts
 	fprintf(stderr, "\nReading data files...     ");
 	/*      loop over all files        */
@@ -76,8 +86,6 @@ main(int argc, char *argv[])
             K,
             positions[n],
             turb_velocities[n], 
-            turb,
-            turb_vecs,
             t );
 
 		n++;
