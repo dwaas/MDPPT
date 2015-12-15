@@ -14,6 +14,7 @@
 
 #define anint(x) ((x >= 0.5) ? (1.0) : (x <= -0.5) ? (-1.0) : (0.0))
 
+//TODO documentation
 
 
 
@@ -91,9 +92,18 @@ TurbConstsLoad (
 		n++;
 	}
 //file reading ends
-//TODO documentation
+//calc kinetic energy
+	double mean_kinetic_energy = 0;
+	for (unsigned n = 0; n < K.SnapshotNum; ++n)
+	{
+		for (unsigned i = 0; i < K.PartNum; ++i)
+		{
+		} 
+	}
+	mean_kinetic_energy /= 2;
+	assert (mean_kinetic_energy > 0);
 
-
+	fprintf (stdout, "%lf", mean_kinetic_energy);
 //free memory 
 	for (unsigned n = 0; n < K.SnapshotNum; n++) 
 	{
