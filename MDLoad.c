@@ -91,26 +91,28 @@ MDLoad
         count_scan += fread(&x1, sizeof(double), 1, fp);
         count_scan += fread(&y1, sizeof(double), 1, fp);
         count_scan += fread(&z1, sizeof(double), 1, fp);
+//TODO exit values
+//TODO disk I/O checks
 		
-		if (x1 < K.Lx / 2.0 || x1 > K.Lx / 2.0) 
+		if (x1 < K.Lx / (- 2.0) || x1 > K.Lx / 2.0) 
 		{
-				printf("\nThe particles positions are not in the expexpected range for this simulation, please check %s.\n", fname);
+				printf("\nThe particles x positions are not in the expexpected range for this simulation, please check %s.\n", fname);
 
 		exit(1);
 
 		}
 
-    	if (y1 < K.Ly / 2.0 || y1 > K.Ly / 2.0) 
+    	if (y1 < K.Ly / (- 2.0) || y1 > K.Ly / 2.0) 
 		{
-				printf("\nThe particles positions are not in the expexpected range for this simulation, please check %s.\n", fname);
+				printf("\nThe particles y positions are not in the expexpected range for this simulation, please check %s.\n", fname);
 
 		exit(1);
 
 		}
 
-		if (z1 < K.Lz / 2.0 || z1 > K.Lz / 2.0) 
+		if (z1 < K.Lz / (- 2.0) || z1 > K.Lz / 2.0) 
 		{
-				printf("\nThe particles positions are not in the expexpected range for this simulation, please check %s.\n", fname);
+				printf("\nThe particles z positions are not in the expexpected range for this simulation, please check %s.\n", fname);
 
 		exit(1);
 
