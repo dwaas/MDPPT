@@ -7,6 +7,17 @@
 #include "Molecule.h" // Molecule
 #include "Turbulence.h" // TurbConsts; TurbConstVecs;
 
+
+//u cross v = u12
+void cross(double x1,double y1,double z1,double x2,double y2,double z2,double *x12,double *y12,double *z12){
+
+  *x12 = y1*z2-y2*z1;
+  *y12 = z1*x2-z2*x1;
+  *z12 = x1*y2-x2*y1;
+
+}
+
+
 //TODO const pointers vs copies
 void
 TurbConstsLoad (
@@ -22,24 +33,51 @@ TurbConstsLoad (
     unsigned count_scan = 0;
 
     for(unsigned i = 0; i < K.NF; ++i)
-    {
-        count_scan += fread(&turb[i].k, sizeof(double), 1, fp);
-        count_scan += fread(&turb[i].omega,  sizeof(double), 1, fp);
-        count_scan += fread(&turb[i].delk, sizeof(double), 1, fp);
-        count_scan += fread(&turb[i].cabs, sizeof(double), 1, fp);
+	{
+		count_scan += fread(&turb[i].k, sizeof(double), 1, fp);
+		count_scan += fread(&turb[i].omega,  sizeof(double), 1, fp);
+		count_scan += fread(&turb[i].delk, sizeof(double), 1, fp);
+		count_scan += fread(&turb[i].cabs, sizeof(double), 1, fp);
 
-        count_scan += fread(&turb_vecs[i].kn_x, sizeof(double), 1, fp);
-        count_scan += fread(&turb_vecs[i].kn_y, sizeof(double), 1, fp);
-        count_scan += fread(&turb_vecs[i].kn_z, sizeof(double), 1, fp);
+		count_scan += fread(&turb_vecs[i].kn_x, sizeof(double), 1, fp);
+		count_scan += fread(&turb_vecs[i].kn_y, sizeof(double), 1, fp);
+		count_scan += fread(&turb_vecs[i].kn_z, sizeof(double), 1, fp);
 
-        count_scan += fread(&turb_vecs[i].c1n_x, sizeof(double), 1, fp);
-        count_scan += fread(&turb_vecs[i].c1n_y, sizeof(double), 1, fp);
-        count_scan += fread(&turb_vecs[i].c1n_z, sizeof(double), 1, fp);
+		count_scan += fread(&turb_vecs[i].c1n_x, sizeof(double), 1, fp);
+		count_scan += fread(&turb_vecs[i].c1n_y, sizeof(double), 1, fp);
+		count_scan += fread(&turb_vecs[i].c1n_z, sizeof(double), 1, fp);
 
-        count_scan += fread(&turb_vecs[i].c2n_x, sizeof(double), 1, fp);
-        count_scan += fread(&turb_vecs[i].c2n_y, sizeof(double), 1, fp);
-        count_scan += fread(&turb_vecs[i].c2n_z, sizeof(double), 1, fp);
-    }
+		count_scan += fread(&turb_vecs[i].c2n_x, sizeof(double), 1, fp);
+		count_scan += fread(&turb_vecs[i].c2n_y, sizeof(double), 1, fp);
+		count_scan += fread(&turb_vecs[i].c2n_z, sizeof(double), 1, fp);
+
+//calc d2
+		cross (
+					turb_vecs[i].c1n_x,
+					turb_vecs[i].c1n_y,
+					turb_vecs[i].c1n_z,
+					turb_vecs[i].kn_x,
+					turb_vecs[i].kn_y,
+					turb_vecs[i].kn_z,
+					&turb_vecs[i].d1_x,
+					&turb_vecs[i].d1_y,
+					&turb_vecs[i].d1_z
+			);
+
+	cross (
+					turb_vecs[i].c2n_x,
+					turb_vecs[i].c2n_y,
+					turb_vecs[i].c2n_z,
+					turb_vecs[i].kn_x,
+					turb_vecs[i].kn_y,
+					turb_vecs[i].kn_z,
+					&turb_vecs[i].d2_x,
+					&turb_vecs[i].d2_y,
+					&turb_vecs[i].d2_z
+			);
+//TODO refactor cross products!
+
+	}
     fclose(fp);
 
     if(count_scan != K.NF * 13) 
@@ -49,9 +87,10 @@ TurbConstsLoad (
     }
 	fprintf (stderr, "\n%s read.\n", fname);
 
-
 	return;
 }
+
+
 
 void
 MDLoad 

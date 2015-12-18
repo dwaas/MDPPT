@@ -12,6 +12,7 @@ struct turb_var
 
 typedef struct turb_var TurbConsts;
 
+//only for kraichnan's method.
 //1 for each mode
 struct turb_vecs_var
 {
@@ -20,7 +21,7 @@ struct turb_vecs_var
   double c2n_x, c2n_y, c2n_z; //b_n cross k_n
   double d1_x, d1_y, d1_z; //c_1 cross k_n
   double d2_x, d2_y, d2_z; //c_2 cross k_n
-
+//TODO consistency in names
 };
 
 typedef struct turb_vecs_var TurbConstVecs;
