@@ -9,6 +9,7 @@
 
 #include "MDConstants.h" //MDConstants;
 #include "MDLoad.h" // MDrestart();
+#include "MDPostProcessing.h" // MeanKineticEnergy()
 #include "Molecule.h" // Molecule
 #include "Turbulence.h" //TurbConsts; TurbConstVecs
 
@@ -29,105 +30,142 @@ main(int argc, char *argv[])
     TurbConstVecs* turb_vecs;
 
 
-//ARGUMENT CHECK	
-	if (argc != 2) //TODO improve interface 
-	{
-		fprintf(stderr, "\nError! Number of arguments is wrong! usage: ./post_proc working_directory_path!!!!\n\n");
-		exit(1);
-	}
-//CONSTANTS
+    //ARGUMENT CHECK	
+    if (argc != 2) //TODO improve interface 
+    {
+        fprintf(stderr, "\nError! Number of arguments is wrong! usage: ./post_proc working_directory_path!!!!\n\n");
+        exit(1);
+    }
+    //CONSTANTS
     MDConstants K;
-  	MDConstants* K_ptr = &K;
+    MDConstants* K_ptr = &K;
     Initialize (K_ptr, argv[1]);//work_dir is now initialised
 
-//allocate 
-	positions = (Molecule**) calloc (K.SnapshotNum, sizeof (Molecule*) );
-	if (!positions) fprintf(stderr, "no memory\n");
+    //allocate 
+    positions = (Molecule**) calloc (K.SnapshotNum, sizeof (Molecule*) );
+    if (!positions) fprintf(stderr, "no memory\n");
+
     turb_velocities = (TurbField**) calloc (K.SnapshotNum, sizeof (TurbField*) );
-	if (!turb_velocities) fprintf(stderr, "no memory\n");
+    if (!turb_velocities) fprintf(stderr, "no memory\n");
 
-	for (unsigned n = 0; n < K.SnapshotNum; n++) 
-	{
-		positions[n] = (Molecule*) calloc(K.PartNum, sizeof (Molecule) );
-		if (!positions[n]) fprintf(stderr, "no memory\n");
+    KraichnanMode*** kraich_modes = (KraichnanMode***) calloc (K.SnapshotNum, sizeof (KraichnanMode**) );
+    if (!kraich_modes) fprintf (stderr, "no memory\n");
 
-		turb_velocities[n] = (TurbField*) calloc(K.PartNum, sizeof (TurbField) );
-		if (!turb_velocities[n]) fprintf(stderr, "no memory\n");
-	}
+    for (unsigned n = 0; n < K.SnapshotNum; ++n) 
+    {
+        positions[n] = (Molecule*) calloc (K.PartNum, sizeof (Molecule) );
+        if (!positions[n]) fprintf (stderr, "no memory\n");
+
+        turb_velocities[n] = (TurbField*) calloc (K.PartNum, sizeof (TurbField) );
+        if (!turb_velocities[n]) fprintf (stderr, "no memory\n");
+
+        kraich_modes[n] = (KraichnanMode**) calloc (K.PartNum, sizeof (KraichnanMode*) );
+        if (!kraich_modes[n]) fprintf (stderr, "no memory\n");
+
+
+        for (unsigned i = 0; i < K.PartNum; ++i)
+        {
+            kraich_modes[n][i] = (KraichnanMode*) calloc (K.NF, sizeof (KraichnanMode) );
+            if (!kraich_modes[n][i]) fprintf (stderr, "no memory\n");
+
+        }
+
+    }
 
     turb = (TurbConsts*) calloc (K.NF, sizeof (TurbConsts) );
-	if (!turb) fprintf(stderr, "no memory\n");
+    if (!turb) fprintf(stderr, "no memory\n");
+
     turb_vecs = (TurbConstVecs*) calloc (K.NF, sizeof (TurbConstVecs) );
-	if (!turb_vecs) fprintf(stderr, "no memory\n");
-
-//end allocation
-
-//Initialise turb constants
-TurbConstsLoad (
-			K,
-    		turb,
-    		turb_vecs
-			);
+    if (!turb_vecs) fprintf(stderr, "no memory\n");
 
 
-//initialise turb constants ends
+    //end allocation
 
-//file reading starts
-	fprintf(stderr, "\nReading data files...     ");
-	/*      loop over all files        */
-
-	for (unsigned t = 0, n = 0;  t < K.iteration_num; t += K.t_gap) 
-	{
-        assert (n < K.SnapshotNum);
-		fprintf(stderr, "\n%lf%%", 100.0*(double)n/(double)K.SnapshotNum); 
-		fflush(NULL);
-//TODO load turbulence.pos only once!!
-	       
-        MDLoad (
+    //Initialise turb constants
+    TurbConstsLoad (
             K,
-            positions[n],
-            turb_velocities[n], 
-            t );
+            turb,
+            turb_vecs
+            );
+    //TODO check headers
 
-		n++;
-	}
-//file reading ends
-//calc kinetic energy
-	double mean_kinetic_energy = 0;
-	for (unsigned n = 0; n < K.SnapshotNum; ++n)
-	{
-		for (unsigned i = 0; i < K.PartNum; ++i)
-		{
-		} 
-	}
-	mean_kinetic_energy /= 2;
-	assert (mean_kinetic_energy > 0);
+    //initialise turb constants ends
 
-	fprintf (stdout, "%lf", mean_kinetic_energy);
-//free memory 
-	for (unsigned n = 0; n < K.SnapshotNum; n++) 
-	{
-    	free (positions[n]);
-		positions[n] = NULL;
+    //file reading starts
+    fprintf(stderr, "\nReading data files...     ");
+    /*      loop over all files        */
 
-		free (turb_velocities[n]);
-		turb_velocities[n] = NULL;
-	}
+    for (unsigned t = 0, n = 0;  t < K.iteration_num; t += K.t_gap) 
+    {
+        assert (n < K.SnapshotNum);
+        fprintf(stderr, "\n%lf%%", 100.0*(double)n/(double)K.SnapshotNum); 
+        fflush(NULL);
+        //TODO load turbulence.pos only once!!
 
-	free(positions);
-	positions = NULL;	
+        MDLoad 
+            (
+             K,
+             positions[n],
+             turb_velocities[n], 
+             t 
+            );
 
-	free(turb_velocities);
-	turb_velocities = NULL;	
-    
+        InitializeTurbModes
+            (
+                K,
+                positions[n],
+                turb_vecs,
+                turb,
+                kraich_modes[n],
+                t
+             );
+        n++;
+    }
+    //file reading ends
+    //calc kinetic energy
+    double mean_kinetic_energy =
+        MeanKineticEnergy 
+        (
+         K,
+         positions
+        );
+
+    fprintf (stdout, "Mean kinetic energy = %lf", mean_kinetic_energy);
+    //free memory 
+    for (unsigned n = 0; n < K.SnapshotNum; n++) 
+    {
+        free (positions[n]);
+        positions[n] = NULL;
+
+        free (turb_velocities[n]);
+        turb_velocities[n] = NULL;
+
+        for (unsigned i = 0; i < K.PartNum; ++i)
+        {
+            free (kraich_modes[n][i]);
+            kraich_modes[n][i] = NULL;
+        }
+
+        free (kraich_modes[n]);
+        kraich_modes[n] = NULL;
+    }
+
+    free(positions);
+    positions = NULL;	
+
+    free(turb_velocities);
+    turb_velocities = NULL;	
+
     free (turb);
     turb = NULL;
-    
+
     free (turb_vecs);
     turb_vecs = NULL;
 
-//free memory ends
-	return 0;
+    free (kraich_modes);
+    kraich_modes = NULL;
+    //free memory ends
+    return 0;
 
 }
 

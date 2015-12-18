@@ -18,7 +18,6 @@ double
 MeanStrainRateTensor
                     (
                         MDConstants K,
-                        Molecule** positions,
-                        TurbField** turb_velocities
+                        Molecule** positions
                     );
 #endif /* MDPOSTPROCESSING_H */

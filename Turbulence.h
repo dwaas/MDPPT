@@ -23,8 +23,16 @@ struct turb_vecs_var
   double d2_x, d2_y, d2_z; //c_2 cross k_n
 //TODO consistency in names
 };
-
 typedef struct turb_vecs_var TurbConstVecs;
+
+
+struct kraichnan_mode_var
+{
+    double sin;
+    double cos;
+};
+typedef struct kraichnan_mode_var KraichnanMode;
+
 
 struct turb_field_var
 {
@@ -34,5 +42,14 @@ struct turb_field_var
 
 typedef struct turb_field_var TurbField;
 
-
+void 
+InitializeTurbModes
+					(
+						MDConstants K,
+						Molecule* molecule,
+    					TurbConstVecs* turb_vecs,
+    					TurbConsts* turb,
+						KraichnanMode** kraich_modes,
+						unsigned itime
+                    );
 #endif /* TURBULENCE_H */

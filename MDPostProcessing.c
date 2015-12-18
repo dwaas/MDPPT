@@ -43,8 +43,7 @@ double
 MeanStrainRateTensor
                     (
                         MDConstants K,
-                        Molecule** positions,
-                        TurbField** turb_velocities
+                        Molecule** positions
                     )
 {
 	double time_mean = 0;
@@ -71,8 +70,7 @@ MeanStrainRateTensor
 	
     time_mean /= (K.iteration_num * K.delta_t);
     time_mean *= K.v_0; // modulus of each velocity
-
-    return MeanStrainRateTensor;
+    return 1.0;
+//     return MeanStrainRateTensor;
 }
 
-p
