@@ -34,8 +34,9 @@ main(int argc, char *argv[])
     if (argc != 2) //TODO improve interface 
     {
         fprintf(stderr, "\nError! Number of arguments is wrong! usage: ./post_proc working_directory_path!!!!\n\n");
-        exit(1);
+        goto exit;
     }
+
     //CONSTANTS
     MDConstants K;
     MDConstants* K_ptr = &K;
@@ -43,50 +44,50 @@ main(int argc, char *argv[])
 
     //allocate 
     positions = (Molecule**) calloc (K.SnapshotNum, sizeof (Molecule*) );
-    if (!positions) fprintf(stderr, "no memory\n");
+    if (!positions) goto no_memory;
 
     turb_velocities = (TurbField**) calloc (K.SnapshotNum, sizeof (TurbField*) );
-    if (!turb_velocities) fprintf(stderr, "no memory\n");
+    if (!turb_velocities) goto no_memory;
 
     KraichnanMode*** kraich_modes = (KraichnanMode***) calloc (K.SnapshotNum, sizeof (KraichnanMode**) );
-    if (!kraich_modes) fprintf (stderr, "no memory\n");
+    if (!kraich_modes) goto no_memory;
 
     for (unsigned n = 0; n < K.SnapshotNum; ++n) 
     {
         positions[n] = (Molecule*) calloc (K.PartNum, sizeof (Molecule) );
-        if (!positions[n]) fprintf (stderr, "no memory\n");
-
+        if (!positions[n]) goto no_memory;
         turb_velocities[n] = (TurbField*) calloc (K.PartNum, sizeof (TurbField) );
-        if (!turb_velocities[n]) fprintf (stderr, "no memory\n");
+        if (!turb_velocities[n]) goto no_memory;
 
         kraich_modes[n] = (KraichnanMode**) calloc (K.PartNum, sizeof (KraichnanMode*) );
-        if (!kraich_modes[n]) fprintf (stderr, "no memory\n");
+        if (!kraich_modes[n]) goto no_memory;
 
 
         for (unsigned i = 0; i < K.PartNum; ++i)
         {
             kraich_modes[n][i] = (KraichnanMode*) calloc (K.NF, sizeof (KraichnanMode) );
-            if (!kraich_modes[n][i]) fprintf (stderr, "no memory\n");
+            if (!kraich_modes[n][i]) goto no_memory;
 
         }
 
     }
 
     turb = (TurbConsts*) calloc (K.NF, sizeof (TurbConsts) );
-    if (!turb) fprintf(stderr, "no memory\n");
+    if (!turb) goto no_memory;
 
     turb_vecs = (TurbConstVecs*) calloc (K.NF, sizeof (TurbConstVecs) );
-    if (!turb_vecs) fprintf(stderr, "no memory\n");
+    if (!turb_vecs) goto no_memory;
 
 
     //end allocation
 
     //Initialise turb constants
-    TurbConstsLoad (
-            K,
-            turb,
-            turb_vecs
-            );
+    TurbConstsLoad 
+	(
+		 K,
+		 turb,
+		 turb_vecs
+	);
     //TODO check headers
 
     //initialise turb constants ends
@@ -131,41 +132,52 @@ main(int argc, char *argv[])
         );
 
     fprintf (stdout, "Mean kinetic energy = %lf", mean_kinetic_energy);
-    //free memory 
-    for (unsigned n = 0; n < K.SnapshotNum; n++) 
-    {
-        free (positions[n]);
-        positions[n] = NULL;
+	goto exit;
 
-        free (turb_velocities[n]);
-        turb_velocities[n] = NULL;
+//EXCEPTIONS
+	no_memory:
+	{
+		fprintf(stderr, "no memory\n");
+		goto exit;
+	}
 
-        for (unsigned i = 0; i < K.PartNum; ++i)
-        {
-            free (kraich_modes[n][i]);
-            kraich_modes[n][i] = NULL;
-        }
+	exit:
+	{
+		//free memory 
+		for (unsigned n = 0; n < K.SnapshotNum; n++) 
+		{
+			free (positions[n]);
+			positions[n] = NULL;
 
-        free (kraich_modes[n]);
-        kraich_modes[n] = NULL;
-    }
+			free (turb_velocities[n]);
+			turb_velocities[n] = NULL;
 
-    free(positions);
-    positions = NULL;	
+			for (unsigned i = 0; i < K.PartNum; ++i)
+			{
+				free (kraich_modes[n][i]);
+				kraich_modes[n][i] = NULL;
+			}
 
-    free(turb_velocities);
-    turb_velocities = NULL;	
+			free (kraich_modes[n]);
+			kraich_modes[n] = NULL;
+		}
 
-    free (turb);
-    turb = NULL;
+		free(positions);
+		positions = NULL;	
 
-    free (turb_vecs);
-    turb_vecs = NULL;
+		free(turb_velocities);
+		turb_velocities = NULL;	
 
-    free (kraich_modes);
-    kraich_modes = NULL;
-    //free memory ends
-    return 0;
+		free (turb);
+		turb = NULL;
 
+		free (turb_vecs);
+		turb_vecs = NULL;
+
+		free (kraich_modes);
+		kraich_modes = NULL;
+		//free memory ends
+		return 0;
+	}
 }
 
