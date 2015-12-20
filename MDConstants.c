@@ -1,21 +1,19 @@
 #include <stdbool.h> //bool
 #include <stdio.h> //fprintf(); fscan(); sprintf();
-#include <stdlib.h> 
 
 
 
 #include "MDConstants.h"
 
 
-//TODO change names
 
-void
+int
 Initialize (MDConstants* K, char argv[])
  {
     if (!argv)
     { 
         fprintf(stderr, "\nWrong string passed: %s;  Program aborted!!!!\n\n", argv);
-        exit(1);
+        return -1;
 
     }
 
@@ -29,7 +27,7 @@ Initialize (MDConstants* K, char argv[])
 	if (!(fp = fopen(fname, "r")) )
 	{
 		fprintf(stderr, "\nError opening file %s;  Program aborted!!!!\n\n", fname);
-		exit(1);
+		return -1;
 	}
 	
 	
@@ -51,7 +49,7 @@ Initialize (MDConstants* K, char argv[])
 	if(count_scan != 17)
 	{
 		fprintf (stderr, "\nWrong number of input parameters, please check %s.\n", fname);
-		exit(1);
+		return -1;
 	}
 //TODO range evaluation 
 	bool invalid_input = K->iteration_num <= 0 ||
@@ -68,14 +66,14 @@ Initialize (MDConstants* K, char argv[])
 	if(invalid_input)
 	{
 		fprintf(stderr, "\nInput parameters are not valid, please check %s.\n", fname);
-		exit(1);
+		return -1;
 	}
 
 	fclose(fp);
     fp = NULL; //TODO review
  
 //READ INPUT.DAT ENDS
-//TODO fix progress  bar
+
 //INIT CONSTS
 	K->DimNum  = (const unsigned) 3; //TODO more elegant way
     K->PartNum = (const unsigned) K->Nx * K->Ny * K->Nz;
@@ -91,7 +89,7 @@ Initialize (MDConstants* K, char argv[])
             K->SnapshotNum, 
             K->PartNum, K->Length); 
             
-    return;
+    return 0;
 }
 
 

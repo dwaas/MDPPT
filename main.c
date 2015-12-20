@@ -40,7 +40,8 @@ main(int argc, char *argv[])
     //CONSTANTS
     MDConstants K;
     MDConstants* K_ptr = &K;
-    Initialize (K_ptr, argv[1]);//work_dir is now initialised
+    if ( Initialize (K_ptr, argv[1]) ) goto exit;
+    //NOTE: work_dir is now initialised
 
     //allocate 
     positions = (Molecule**) calloc (K.SnapshotNum, sizeof (Molecule*) );
@@ -82,12 +83,14 @@ main(int argc, char *argv[])
     //end allocation
 
     //Initialise turb constants
-    TurbConstsLoad 
-	(
-		 K,
-		 turb,
-		 turb_vecs
-	);
+    if (TurbConstsLoad 
+            (   
+             K,
+             turb,
+             turb_vecs
+        )
+    ) goto exit;
+//TODO add exceptions in function
     //TODO check headers
 
     //initialise turb constants ends
@@ -103,23 +106,25 @@ main(int argc, char *argv[])
         fflush(NULL);
         //TODO load turbulence.pos only once!!
 
-        MDLoad 
+       if ( MDLoad 
             (
              K,
              positions[n],
              turb_velocities[n], 
              t 
-            );
+            )
+           ) goto exit;
 
-        InitializeTurbModes
-            (
+        if ( InitializeTurbModes
+             (
                 K,
                 positions[n],
                 turb_vecs,
                 turb,
                 kraich_modes[n],
                 t
-             );
+             )
+           ) goto exit;
         n++;
     }
     //file reading ends

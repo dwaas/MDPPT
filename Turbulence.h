@@ -42,7 +42,7 @@ struct turb_field_var
 
 typedef struct turb_field_var TurbField;
 
-void 
+int 
 InitializeTurbModes
 					(
 						MDConstants K,

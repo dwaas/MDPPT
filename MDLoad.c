@@ -1,6 +1,5 @@
 #include <assert.h> //assert
 #include <stdio.h> // FILE; fprintf(), fread()
-#include <stdlib.h> //exit(); 
 
 #include "MDConstants.h" //MDConstants
 #include "MDLoad.h" 
@@ -19,12 +18,13 @@ void cross(double x1,double y1,double z1,double x2,double y2,double z2,double *x
 
 
 //TODO const pointers vs copies
-void
-TurbConstsLoad (
-			const MDConstants K,
-    		TurbConsts* turb,
-    		TurbConstVecs* turb_vecs
-			)
+int
+TurbConstsLoad 
+(
+    const MDConstants K,
+ 	TurbConsts* turb,
+ 	TurbConstVecs* turb_vecs
+)
 {
 	char fname[60];	
     sprintf(fname, "%s/turbulence.pos", work_dir);
@@ -50,7 +50,7 @@ TurbConstsLoad (
 		count_scan += fread(&turb_vecs[i].c2n_x, sizeof(double), 1, fp);
 		count_scan += fread(&turb_vecs[i].c2n_y, sizeof(double), 1, fp);
 		count_scan += fread(&turb_vecs[i].c2n_z, sizeof(double), 1, fp);
-
+/*
 //calc d2
 		cross (
 					turb_vecs[i].c1n_x,
@@ -75,6 +75,7 @@ TurbConstsLoad (
 					&turb_vecs[i].d2_y,
 					&turb_vecs[i].d2_z
 			);
+*/
 //TODO refactor cross products!
 
 	}
@@ -83,16 +84,16 @@ TurbConstsLoad (
     if(count_scan != K.NF * 13) 
     {
         fprintf (stderr, "Wrong number of turbulence points in %s.\n", fname);
-        exit(0);
+		return -1;
     }
 	fprintf (stderr, "\n%s read.\n", fname);
 
-	return;
+	return 0;
 }
 
 
 
-void
+int
 MDLoad 
 (
     const MDConstants K, 
@@ -120,7 +121,7 @@ MDLoad
  	if ( !(fp = fopen(fname, "r")) )
 		{
 			fprintf(stderr, "\nError opening file %s;  Program aborted!\n\n", fname);
-			exit(1);
+			return -1;
 		}
 
    count_scan = 0;
@@ -130,14 +131,13 @@ MDLoad
         count_scan += fread(&x1, sizeof(double), 1, fp);
         count_scan += fread(&y1, sizeof(double), 1, fp);
         count_scan += fread(&z1, sizeof(double), 1, fp);
-//TODO exit values
 //TODO disk I/O checks
 		
 		if (x1 < K.Lx / (- 2.0) || x1 > K.Lx / 2.0) 
 		{
-				printf("\nThe particles x positions are not in the expexpected range for this simulation, please check %s.\n", fname);
+			printf("\nThe particles x positions are not in the expexpected range for this simulation, please check %s.\n", fname);
 
-		exit(1);
+			return -1;
 
 		}
 
@@ -145,7 +145,7 @@ MDLoad
 		{
 				printf("\nThe particles y positions are not in the expexpected range for this simulation, please check %s.\n", fname);
 
-		exit(1);
+			return -1;
 
 		}
 
@@ -153,7 +153,7 @@ MDLoad
 		{
 				printf("\nThe particles z positions are not in the expexpected range for this simulation, please check %s.\n", fname);
 
-		exit(1);
+			return -1;
 
 		} //TODO find a more readable way 
  
@@ -174,7 +174,7 @@ MDLoad
 		printf("\nFile does not contain 6 parameters (3 positions and 3 directions), please check %s.\n", fname);
 		printf("\nParameters contained =  %u \n", count_scan);
 
-		exit(1);
+			return -1;
 	}
 	fprintf (stderr, "\n%s read.\n", fname);
 	
@@ -183,7 +183,8 @@ MDLoad
  	if ( !(fp = fopen(fname, "r") ) ) 
 		{
 			fprintf(stderr, "\nError opening file %s;  Program aborted!\n\n", fname);
-			exit(1);
+			return -1;
+
 		}
 
    count_scan = 0;
@@ -203,10 +204,10 @@ MDLoad
 		fprintf (stderr, "\nFile does not contain 3 parameters, please check %s.\n", fname);
 		fprintf (stderr, "\nParameters contained =  %u \n", count_scan);
 
-		exit(1);
+		return -1;
 	}
 	fprintf (stderr, "\n%s read.\n", fname);
-	return;	
+	return 0;
 }
 
 

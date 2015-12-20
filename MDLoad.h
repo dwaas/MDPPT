@@ -11,14 +11,16 @@
 
 extern char work_dir[];
 
-void
-TurbConstsLoad (
-			const MDConstants K,
-    		TurbConsts* turb,
-    		TurbConstVecs* turb_vecs
-			);
+int
+TurbConstsLoad 
+(
+ const MDConstants K,
+ TurbConsts* turb,
+ TurbConstVecs* turb_vecs
+);
 
-void MDLoad 
+int
+MDLoad 
 (
     const MDConstants K, 
     Molecule* molecule, 

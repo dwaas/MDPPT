@@ -10,7 +10,7 @@
 #include "Turbulence.h" //KraichnanMode
 
 //TODO MDInitialize vorticities
-void
+int
 InitializeTurbModes
 					(
 						MDConstants K,
@@ -54,4 +54,5 @@ InitializeTurbModes
 
 			}
 		}
+    return 0;
 }

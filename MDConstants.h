@@ -31,7 +31,7 @@ typedef struct MDConstants
 
 } MDConstants;
 
-void
+int
 Initialize (MDConstants* MDConsts, char argv[]);
 
 extern char work_dir[];
