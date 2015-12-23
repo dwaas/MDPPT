@@ -1,8 +1,8 @@
 CC=gcc
 FLAGS= -Wvector-operation-performance -Wshadow -Wsuggest-attribute=const -Wall -Wextra -Werror -march=native -ftree-loop-im -fopenmp -pg -std=gnu99 #-fprofile-arcs -ftest-coverage #-funroll-loops 
 ENDFLAGS= -lm -lgomp 
-OBJS=main.o MDLoad.o MDConstants.o 
-DEPS= MDLoad.h MDConstants.h Turbulence.h Molecule.h
+OBJS=main.o MDLoad.o MDConstants.o MDPostProcessing.o Turbulence.o
+DEPS= MDLoad.h MDConstants.h Turbulence.h Molecule.h MDPostProcessing.h
 EXE=post_proc
 ARGS= ../../testrun
 
