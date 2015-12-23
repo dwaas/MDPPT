@@ -8,7 +8,7 @@
 
 
 #include "MDConstants.h" //MDConstants;
-#include "MDLoad.h" // MDrestart();
+#include "MDLoad.h" // MDLoad();
 #include "MDPostProcessing.h" // MeanKineticEnergy()
 #include "Molecule.h" // Molecule
 #include "Turbulence.h" //TurbConsts; TurbConstVecs
@@ -16,6 +16,7 @@
 #define anint(x) ((x >= 0.5) ? (1.0) : (x <= -0.5) ? (-1.0) : (0.0))
 
 //TODO documentation
+//TODO testsuite: wrong args, wrong input file, wrong data in input file, no memory
 
 
 
@@ -89,7 +90,7 @@ main(int argc, char *argv[])
              turb,
              turb_vecs
         )
-    ) goto exit;
+    ) goto free_memory;
 //TODO add exceptions in function
     //TODO check headers
 
@@ -113,7 +114,7 @@ main(int argc, char *argv[])
              turb_velocities[n], 
              t 
             )
-           ) goto exit;
+           ) goto free_memory;
 
         if ( InitializeTurbModes
              (
@@ -124,7 +125,7 @@ main(int argc, char *argv[])
                 kraich_modes[n],
                 t
              )
-           ) goto exit;
+           ) goto free_memory;
         n++;
     }
     //file reading ends
@@ -138,18 +139,17 @@ main(int argc, char *argv[])
         );
 
     fprintf (stdout, "Mean kinetic energy = %lf", mean_kinetic_energy);
-	goto exit;
+	goto free_memory;
 
 //EXCEPTIONS
 	no_memory:
 	{
 		fprintf(stderr, "no memory\n");
-		goto exit;
+		goto free_memory;
 	}
 
-	exit:
+    free_memory:
 	{
-		//free memory 
 		for (unsigned n = 0; n < K.SnapshotNum; n++) 
 		{
 			free (positions[n]);
@@ -182,8 +182,13 @@ main(int argc, char *argv[])
 
 		free (kraich_modes);
 		kraich_modes = NULL;
-		//free memory ends
-		return 0;
+
+		goto exit;
 	}
+
+    exit:
+    {
+        return 0;
+    }
 }
 
