@@ -16,12 +16,12 @@ typedef struct turb_var TurbConsts;
 //1 for each mode
 struct turb_vecs_var
 {
-  double kn[kDIM]; // k_n unit vectors
-  double c1n[kDIM]; //a_n cross k_n
-  double c2n[kDIM]; //b_n cross k_n
-  double d1[kDIM]; //c_1 cross k_n
-  double d2[kDIM]; //c_2 cross k_n
-//TODO consistency in names
+    double kn[kDIM]; // k_n unit vectors
+    double c1n[kDIM]; //a_n cross k_n
+    double c2n[kDIM]; //b_n cross k_n
+    double d1[kDIM]; //c_1 cross k_n
+    double d2[kDIM]; //c_2 cross k_n
+    //TODO consistency in names
 };
 typedef struct turb_vecs_var TurbConstVecs;
 
@@ -36,20 +36,20 @@ typedef struct kraichnan_mode_var KraichnanMode;
 
 struct turb_field_var
 {
-  double direction[kDIM]; // velocity components of the field
-  double vorticity[kDIM]; //vorticity components of the field
+    double direction[kDIM]; // velocity components of the field
+    double vorticity[kDIM]; //vorticity components of the field
 };
 
 typedef struct turb_field_var TurbField;
 
 int 
 InitializeTurbModes
-					(
-						MDConstants K,
-						Molecule* molecule,
-    					TurbConstVecs* turb_vecs,
-    					TurbConsts* turb,
-						KraichnanMode** kraich_modes,
-						unsigned itime
-                    );
+(
+     MDConstants K,
+     Molecule* molecule,
+     TurbConstVecs* turb_vecs,
+     TurbConsts* turb,
+     KraichnanMode** kraich_modes,
+     unsigned itime
+);
 #endif /* TURBULENCE_H */

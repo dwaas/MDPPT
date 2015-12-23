@@ -7,15 +7,6 @@
 #include "Turbulence.h" // TurbConsts; TurbConstVecs;
 
 
-//u cross v = u12
-void cross(double x1,double y1,double z1,double x2,double y2,double z2,double *x12,double *y12,double *z12){
-
-  *x12 = y1*z2-y2*z1;
-  *y12 = z1*x2-z2*x1;
-  *z12 = x1*y2-x2*y1;
-
-}
-
 
 //TODO const pointers vs copies
 int
@@ -98,8 +89,8 @@ MDLoad
 //TODO find tests for directions and turb velocities too
     for (unsigned i = 0; i < K.PartNum; ++i)
     {
-//TODO disk I/O checks
-        
+        //TODO disk I/O checks
+
         for (unsigned j = 0; j < kDIM; ++j)
         {
             count_scan += fread(&pos[j], sizeof(double), 1, fp);
@@ -107,7 +98,7 @@ MDLoad
             {
                 printf("\nThe particles in the %u-th positions \
                         are not in the expexpected range for this simulation,\
-                         please check %s.\n", j, fname);
+                        please check %s.\n", j, fname);
                 return -1;
             }//pos[] is loaded with values within the valid range
 
@@ -133,11 +124,11 @@ MDLoad
 	sprintf(fname,"%s/turbField-%d.pos",work_dir, next_loop);
     fp = fopen(fname, "r");
  	if ( !(fp = fopen(fname, "r") ) ) 
-		{
-			fprintf(stderr, "\nError opening file %s;  Program aborted!\n\n", fname);
-			return -1;
+	{
+        fprintf(stderr, "\nError opening file %s;  Program aborted!\n\n", fname);
+        return -1;
 
-		}
+	}
 
    count_scan = 0;
 
@@ -149,7 +140,6 @@ MDLoad
         }
     } 
 
-//only used to reload    count_scan += fread(&last_t, sizeof(int), 1, fp);
 
     fclose(fp);
 	if(count_scan != (K.PartNum * kDIM) )

@@ -85,12 +85,12 @@ main(int argc, char *argv[])
 
     //Initialise turb constants
     if (TurbConstsLoad 
-            (   
-             K,
-             turb,
-             turb_vecs
+        (   
+			K,
+            turb,
+            turb_vecs
         )
-    ) goto free_memory;
+	   ) { goto free_memory; }
 //TODO add exceptions in function
     //TODO check headers
 
@@ -114,7 +114,7 @@ main(int argc, char *argv[])
              turb_velocities[n], 
              t 
             )
-           ) goto free_memory;
+           ) { goto free_memory; }
 
         if ( InitializeTurbModes
              (
@@ -125,7 +125,7 @@ main(int argc, char *argv[])
                 kraich_modes[n],
                 t
              )
-           ) goto free_memory;
+           ) { goto free_memory; }
         n++;
     }
     //file reading ends

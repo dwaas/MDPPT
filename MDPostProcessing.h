@@ -10,15 +10,15 @@
 
 double
 MeanKineticEnergy
-                (
-                    MDConstants K,
-                    Molecule** positions,
-                    TurbField** turb_velocities
-                );
+(
+    MDConstants K,
+    Molecule** positions,
+    TurbField** turb_velocities
+);
 double
 MeanStrainRateTensor
-                    (
-                        MDConstants K,
-                        Molecule** positions
-                    );
+(
+    MDConstants K,
+    Molecule** positions
+);
 #endif /* MDPOSTPROCESSING_H */
