@@ -1,11 +1,13 @@
 #ifndef MOLECULE_H
 #define MOLECULE_H
 
+#include "MDConstants.h" //kDIM
+
 struct molecule_var
 {
-	double x,y,z;
-	double torque_x,torque_y,torque_z;
-	double e_x,e_y,e_z;
+	double position[kDIM];
+	double torque[kDIM];
+	double direction[kDIM];
 	double lambda;
 	unsigned neighbors;
 };

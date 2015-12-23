@@ -38,46 +38,21 @@ TurbConstsLoad
 		count_scan += fread(&turb[i].omega,  sizeof(double), 1, fp);
 		count_scan += fread(&turb[i].delk, sizeof(double), 1, fp);
 		count_scan += fread(&turb[i].cabs, sizeof(double), 1, fp);
+//TODO eliminate multiple for loops
+        for (unsigned j = 0; j < kDIM; ++j)
+        {
+	        count_scan += fread(&turb_vecs[i].kn[j], sizeof(double), 1, fp);
+        }
 
-		count_scan += fread(&turb_vecs[i].kn_x, sizeof(double), 1, fp);
-		count_scan += fread(&turb_vecs[i].kn_y, sizeof(double), 1, fp);
-		count_scan += fread(&turb_vecs[i].kn_z, sizeof(double), 1, fp);
+        for (unsigned j = 0; j < kDIM; ++j)
+        {
+		    count_scan += fread(&turb_vecs[i].c1n[j], sizeof(double), 1, fp);
+        }
 
-		count_scan += fread(&turb_vecs[i].c1n_x, sizeof(double), 1, fp);
-		count_scan += fread(&turb_vecs[i].c1n_y, sizeof(double), 1, fp);
-		count_scan += fread(&turb_vecs[i].c1n_z, sizeof(double), 1, fp);
-
-		count_scan += fread(&turb_vecs[i].c2n_x, sizeof(double), 1, fp);
-		count_scan += fread(&turb_vecs[i].c2n_y, sizeof(double), 1, fp);
-		count_scan += fread(&turb_vecs[i].c2n_z, sizeof(double), 1, fp);
-/*
-//calc d2
-		cross (
-					turb_vecs[i].c1n_x,
-					turb_vecs[i].c1n_y,
-					turb_vecs[i].c1n_z,
-					turb_vecs[i].kn_x,
-					turb_vecs[i].kn_y,
-					turb_vecs[i].kn_z,
-					&turb_vecs[i].d1_x,
-					&turb_vecs[i].d1_y,
-					&turb_vecs[i].d1_z
-			);
-
-	cross (
-					turb_vecs[i].c2n_x,
-					turb_vecs[i].c2n_y,
-					turb_vecs[i].c2n_z,
-					turb_vecs[i].kn_x,
-					turb_vecs[i].kn_y,
-					turb_vecs[i].kn_z,
-					&turb_vecs[i].d2_x,
-					&turb_vecs[i].d2_y,
-					&turb_vecs[i].d2_z
-			);
-*/
-//TODO refactor cross products!
-
+        for (unsigned j = 0; j < kDIM; ++j)
+        {
+		    count_scan += fread(&turb_vecs[i].c2n[j], sizeof(double), 1, fp);
+        }
 	}
     fclose(fp);
 
@@ -106,15 +81,11 @@ MDLoad
 	assert (next_loop <= K.iteration_num);
 //TODO check if positions are -L/2< x <+L/2
 
-    double x1, y1, z1;
 
     char fname[60];
     FILE *fp;
     unsigned count_scan;
-    double 
-            side_x_minus1 = 1.0 / K.Lx,
-            side_y_minus1 = 1.0 / K.Ly,
-            side_z_minus1 = 1.0 / K.Lz;
+    double pos[kDIM];//temp variable
 
 	sprintf(fname,"%s/t-%d.pos",work_dir, next_loop);
     fp = fopen(fname, "r");
@@ -128,42 +99,24 @@ MDLoad
 //TODO find tests for directions and turb velocities too
     for (unsigned i = 0; i < K.PartNum; ++i)
     {
-        count_scan += fread(&x1, sizeof(double), 1, fp);
-        count_scan += fread(&y1, sizeof(double), 1, fp);
-        count_scan += fread(&z1, sizeof(double), 1, fp);
 //TODO disk I/O checks
-		
-		if (x1 < K.Lx / (- 2.0) || x1 > K.Lx / 2.0) 
-		{
-			printf("\nThe particles x positions are not in the expexpected range for this simulation, please check %s.\n", fname);
+        
+        for (unsigned j = 0; j < kDIM; ++j)
+        {
+            count_scan += fread(&pos[j], sizeof(double), 1, fp);
+            if ( pos[j] < K.L[j] / (-2.0) || pos[j] > K.L[j] / 2.0 )
+            {
+                printf("\nThe particles in the %u-th positions \
+                        are not in the expexpected range for this simulation,\
+                         please check %s.\n", j, fname);
+                return -1;
+            }//pos[] is loaded with values within the valid range
 
-			return -1;
+            molecule[i].position[j] = K.side_minus1[j] * pos[j];
 
-		}
+            count_scan += fread(&molecule[i].direction[j], sizeof(double), 1, fp);
+        }// molecule.position[] and molecule.direction[] are initialized		
 
-    	if (y1 < K.Ly / (- 2.0) || y1 > K.Ly / 2.0) 
-		{
-				printf("\nThe particles y positions are not in the expexpected range for this simulation, please check %s.\n", fname);
-
-			return -1;
-
-		}
-
-		if (z1 < K.Lz / (- 2.0) || z1 > K.Lz / 2.0) 
-		{
-				printf("\nThe particles z positions are not in the expexpected range for this simulation, please check %s.\n", fname);
-
-			return -1;
-
-		} //TODO find a more readable way 
- 
-	    molecule[i].x = side_x_minus1 * x1;
-        molecule[i].y = side_y_minus1 * y1; 
-        molecule[i].z = side_z_minus1 * z1; 
-
-        count_scan += fread(&molecule[i].e_x, sizeof(double), 1, fp);
-        count_scan += fread(&molecule[i].e_y, sizeof(double), 1, fp);
-        count_scan += fread(&molecule[i].e_z, sizeof(double), 1, fp);
     } 
 
 
@@ -191,9 +144,10 @@ MDLoad
 
     for (unsigned i = 0; i < K.PartNum; ++i)
     {
-        count_scan += fread(&turb_field[i].e_x, sizeof(double), 1, fp);
-        count_scan += fread(&turb_field[i].e_y, sizeof(double), 1, fp);
-        count_scan += fread(&turb_field[i].e_z, sizeof(double), 1, fp);
+        for (unsigned j = 0; j < kDIM; ++j)
+        {
+            count_scan += fread(&turb_field[i].direction[j], sizeof(double), 1, fp);
+        }
     } 
 
 //only used to reload    count_scan += fread(&last_t, sizeof(int), 1, fp);

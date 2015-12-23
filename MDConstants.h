@@ -8,8 +8,8 @@ typedef struct MDConstants
     //input.dat consts
     //indentation represents actual file layout
     unsigned iteration_num;
-    unsigned Nx, Ny, Nz;
-    double Lx, Ly, Lz;
+    unsigned N[kDIM];
+    double L[kDIM];
     double dcut;
     char starting_branch[50];
     double v_0; 
@@ -21,13 +21,8 @@ typedef struct MDConstants
 
     //derived consts
     unsigned PartNum;
-    double Length;
     unsigned SnapshotNum; 
-    double InvLength;
-    double 
-            side_x_minus1, 
-            side_y_minus1, 
-            side_z_minus1;
+    double side_minus1[kDIM];
 
 
 } MDConstants;
