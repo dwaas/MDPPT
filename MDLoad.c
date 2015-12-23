@@ -79,7 +79,6 @@ MDLoad
 {
 	//TODO check that K is initialised; check input is valid.
 	assert (next_loop <= K.iteration_num);
-//TODO check if positions are -L/2< x <+L/2
 
 
     char fname[60];

@@ -32,13 +32,17 @@ Initialize (MDConstants* K, char argv[])
 	
 	
 	unsigned count_scan = 0;
-
+//TODO compress into 1 for loop
 	count_scan += fscanf(fp, "%u", &(K->iteration_num) );
     for (unsigned j = 0; j < kDIM; ++j)
     {
         count_scan += fscanf(fp, "%u", &(K->N[j]) );
+    }
+    for (unsigned j = 0; j < kDIM; ++j)
+    {
         count_scan += fscanf(fp, "%lf", &(K->L[j]) );
     }
+     
 	count_scan += fscanf(fp, "%lf", &(K->dcut) );
 	count_scan += fscanf(fp, "%s", (K->starting_branch) );
 	count_scan += fscanf(fp, "%lf", &(K->v_0) ); /* LC alignment: constant velocity*/
