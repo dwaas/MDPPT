@@ -5,8 +5,6 @@
 
 #include "MDConstants.h"
 
-
-
 int
 Initialize (MDConstants* K, char argv[])
  {
@@ -34,15 +32,8 @@ Initialize (MDConstants* K, char argv[])
 	unsigned count_scan = 0;
 //TODO compress into 1 for loop
 	count_scan += fscanf(fp, "%u", &(K->iteration_num) );
-    for (unsigned j = 0; j < kDIM; ++j)
-    {
-        count_scan += fscanf(fp, "%u", &(K->N[j]) );
-    }
-    for (unsigned j = 0; j < kDIM; ++j)
-    {
-        count_scan += fscanf(fp, "%lf", &(K->L[j]) );
-    }
-     
+    CountReadUnsigned (&count_scan, fp, K->N, kDIM);
+    CountReadDouble (&count_scan, fp, K->L, kDIM);
 	count_scan += fscanf(fp, "%lf", &(K->dcut) );
 	count_scan += fscanf(fp, "%s", (K->starting_branch) );
 	count_scan += fscanf(fp, "%lf", &(K->v_0) ); /* LC alignment: constant velocity*/
@@ -99,26 +90,70 @@ Initialize (MDConstants* K, char argv[])
 	K->SnapshotNum = (const unsigned) ((K->iteration_num / K->t_gap) + 1);//we count snapshot 0 as well
 
 //INIT CONSTS ends
-	fprintf(stderr, "\niteration num = %u t_gap = %u \
-						\nsnapshot number = %i\
-						\nparticle num = %i \n",
-			K->iteration_num, K->t_gap, 
-            K->SnapshotNum, 
-            K->PartNum);
-//TODO unroll dimensional loops
-    for (unsigned j = 0; j < kDIM; ++j)
-    {
-        fprintf (stderr, "L_%u = %f\t", j, K->L[j]);
-    } 
-    fprintf (stderr, "\n");
+	fprintf
+    (
+        stderr, 
+        "\niteration num = %u t_gap = %u \
+         \nsnapshot number = %i\
+         \nparticle num = %i \n",
+        K->iteration_num, K->t_gap, 
+        K->SnapshotNum, 
+        K->PartNum
+    );
 
-    for (unsigned j = 0; j < kDIM; ++j)
-    {
-        fprintf (stderr, "side_minus1_%u = %f\t", j, K->side_minus1[j]);
-    }
-    fprintf (stderr, "\n");
-            
+//TODO unroll dimensional loops
+    PrintVals ("L_%u = %f\t", K->L, kDIM);
+    PrintVals ("side_minus1_%u = %f\t", K->side_minus1, kDIM);
+       
     return 0;
 }
 
+void
+CountReadDouble
+(
+    unsigned* count_scan,
+    FILE* fp,
+    double* v_ptr,
+    unsigned dim
+)
+{
+    for (unsigned j = 0; j < dim; ++j, ++v_ptr)
+    {
+        *count_scan += fscanf(fp, "%lf", v_ptr );
+    }
 
+    return;
+}
+ 
+void
+CountReadUnsigned
+(
+    unsigned* count_scan,
+    FILE* fp,
+    unsigned* v_ptr,
+    const unsigned dim
+)
+{
+    for (unsigned j = 0; j < dim; ++j, ++v_ptr)
+    {
+        *count_scan += fscanf(fp, "%u", v_ptr );
+    }
+
+    return;
+}
+ 
+void
+PrintVals
+(
+    const char message[],
+    double* v_ptr,
+    unsigned dim
+)
+{
+    for (unsigned j = 0; j < dim; ++j, ++v_ptr)
+    {
+        fprintf (stderr, message, j, *v_ptr);
+    } 
+    fprintf (stderr, "\n");
+    return;
+} 
