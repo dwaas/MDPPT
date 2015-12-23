@@ -23,7 +23,7 @@ typedef struct MDConstants
     unsigned PartNum;
     unsigned SnapshotNum; 
     double side_minus1[kDIM];
-
+//TODO better name for side_minus1
 
 } MDConstants;
 

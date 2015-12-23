@@ -88,20 +88,35 @@ Initialize (MDConstants* K, char argv[])
 //READ INPUT.DAT ENDS
 
 //INIT CONSTS
+    K->PartNum = 1;
     for (unsigned j = 0; j < kDIM; ++j)
     {
-        K->PartNum = K->N[j];
+        K->PartNum *= K->N[j];
+        K->side_minus1[j] = 1.0 / K->L[j]; 
     }
+//TODO better exceptions: at the moment free runs also on non yet allocated arrays => causes segfault
     K->PartNum = (const unsigned) K->PartNum;
 	K->SnapshotNum = (const unsigned) ((K->iteration_num / K->t_gap) + 1);//we count snapshot 0 as well
 
 //INIT CONSTS ends
-	fprintf(stderr, "\niteration num = %u t_gap =%u \
+	fprintf(stderr, "\niteration num = %u t_gap = %u \
 						\nsnapshot number = %i\
 						\nparticle num = %i \n",
 			K->iteration_num, K->t_gap, 
             K->SnapshotNum, 
-            K->PartNum); 
+            K->PartNum);
+//TODO unroll dimensional loops
+    for (unsigned j = 0; j < kDIM; ++j)
+    {
+        fprintf (stderr, "L_%u = %f\t", j, K->L[j]);
+    } 
+    fprintf (stderr, "\n");
+
+    for (unsigned j = 0; j < kDIM; ++j)
+    {
+        fprintf (stderr, "side_minus1_%u = %f\t", j, K->side_minus1[j]);
+    }
+    fprintf (stderr, "\n");
             
     return 0;
 }
