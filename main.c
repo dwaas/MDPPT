@@ -128,7 +128,8 @@ main(int argc, char *argv[])
         MeanKineticEnergy 
         (
          K,
-         positions
+         positions,
+         turb_velocities
         );
 
     fprintf (stdout, "Mean kinetic energy = %lf", mean_kinetic_energy);
