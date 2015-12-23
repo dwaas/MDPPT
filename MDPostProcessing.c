@@ -8,7 +8,8 @@ double
 MeanKineticEnergy
                 (
                     MDConstants K,
-                    Molecule **positions
+                    Molecule **positions,
+					TurbField **turb_velocities
                 )
 {
 	double time_mean = 0;
@@ -17,11 +18,16 @@ MeanKineticEnergy
 		double part_mean = 0; //for every new timestep
 		
 		for (unsigned i = 0; i < K.PartNum; ++i)//calc mean over particles
-		{
+		{		
+		 //TODO refactor molecule with position ARRAY
+				double v_x = K.v_0 * positions[n][i].e_x + turb_velocities[n][i].e_x;
+				double v_y = K.v_0 * positions[n][i].e_y + turb_velocities[n][i].e_y;
+				double v_z = K.v_0 * positions[n][i].e_z + turb_velocities[n][i].e_z;
+
                 double v_squared = 
-                                    pow (positions[n][i].e_x, 2) +
-                                    pow (positions[n][i].e_y, 2) +
-                                    pow (positions[n][i].e_z, 2); 
+                                    pow (v_x, 2) +
+                                    pow (v_y, 2) +
+                                    pow (v_z, 2); 
  
                 double kin_energy = v_squared / 2.0; // mass is assumed = 1
 
@@ -34,7 +40,6 @@ MeanKineticEnergy
 	}	
 	
     time_mean /= (K.iteration_num * K.delta_t);
-    time_mean *= K.v_0; // modulus of each velocity
 
     return time_mean;
 }
