@@ -29,32 +29,23 @@ TurbConstsLoad
 		count_scan += fread(&turb[i].omega,  sizeof(double), 1, fp);
 		count_scan += fread(&turb[i].delk, sizeof(double), 1, fp);
 		count_scan += fread(&turb[i].cabs, sizeof(double), 1, fp);
-//TODO eliminate multiple for loops
-        for (unsigned j = 0; j < kDIM; ++j)
-        {
-	        count_scan += fread(&turb_vecs[i].kn[j], sizeof(double), 1, fp);
-        }
-
-        for (unsigned j = 0; j < kDIM; ++j)
-        {
-		    count_scan += fread(&turb_vecs[i].c1n[j], sizeof(double), 1, fp);
-        }
-
-        for (unsigned j = 0; j < kDIM; ++j)
-        {
-		    count_scan += fread(&turb_vecs[i].c2n[j], sizeof(double), 1, fp);
-        }
+		count_scan += fread (&turb_vecs[i].kn, sizeof(double), kDIM, fp);
+		count_scan += fread (&turb_vecs[i].c1n, sizeof(double), kDIM, fp);
+		count_scan += fread (&turb_vecs[i].c2n, sizeof(double), kDIM, fp);
+//TODO fread vs fscanf
 	}
     fclose(fp);
 
-    if(count_scan != K.NF * 13) 
-    {
+    if(count_scan != K.NF * 13) goto wrong_pos_number; //TOOD macro to get the third argument of fread
+
+   	fprintf (stderr, "\n%s read.\n", fname);
+	return 0;
+
+	wrong_pos_number:
+	{
         fprintf (stderr, "Wrong number of turbulence points in %s.\n", fname);
 		return -1;
     }
-	fprintf (stderr, "\n%s read.\n", fname);
-
-	return 0;
 }
 
 
@@ -74,19 +65,14 @@ MDLoad
 
     char fname[60];
     FILE *fp;
-    unsigned count_scan;
-    double pos[kDIM];//temp variable
 
 	sprintf(fname,"%s/t-%d.pos",work_dir, next_loop);
-    fp = fopen(fname, "r");
- 	if ( !(fp = fopen(fname, "r")) )
-		{
-			fprintf(stderr, "\nError opening file %s;  Program aborted!\n\n", fname);
-			return -1;
-		}
-
-   count_scan = 0;
+ 	if ( !(fp = fopen(fname, "r")) ) goto wrong_file_name;
+		
+    unsigned count_scan = 0;
 //TODO find tests for directions and turb velocities too
+
+    double pos[kDIM];//temp variable
     for (unsigned i = 0; i < K.PartNum; ++i)
     {
         //TODO disk I/O checks
@@ -99,7 +85,7 @@ MDLoad
                 printf("\nThe particles in the %u-th positions \
                         are not in the expexpected range for this simulation,\
                         please check %s.\n", j, fname);
-                return -1;
+                goto error;
             }//pos[] is loaded with values within the valid range
 
             molecule[i].position[j] = K.side_minus1[j] * pos[j];
@@ -112,46 +98,51 @@ MDLoad
 
     fclose(fp);
 
-	if(count_scan != (K.PartNum * kDIM * 2) )
-	{
-		printf("\nFile does not contain 6 parameters (3 positions and 3 directions), please check %s.\n", fname);
-		printf("\nParameters contained =  %u \n", count_scan);
+	if(count_scan != (K.PartNum * kDIM * 2) ) goto wrong_num_pos_entries;
 
-			return -1;
-	}
 	fprintf (stderr, "\n%s read.\n", fname);
 	
 	sprintf(fname,"%s/turbField-%d.pos",work_dir, next_loop);
     fp = fopen(fname, "r");
- 	if ( !(fp = fopen(fname, "r") ) ) 
-	{
-        fprintf(stderr, "\nError opening file %s;  Program aborted!\n\n", fname);
-        return -1;
-
-	}
-
-   count_scan = 0;
+ 	if ( !(fp = fopen(fname, "r") ) ) goto wrong_file_name;
+	
+    count_scan = 0;
 
     for (unsigned i = 0; i < K.PartNum; ++i)
     {
-        for (unsigned j = 0; j < kDIM; ++j)
-        {
-            count_scan += fread(&turb_field[i].direction[j], sizeof(double), 1, fp);
-        }
+            count_scan += fread(&turb_field[i], sizeof(double), kDIM, fp);
     } 
 
-
     fclose(fp);
-	if(count_scan != (K.PartNum * kDIM) )
-	{
-		fprintf (stderr, "\nFile does not contain 3 parameters, please check %s.\n", fname);
-		fprintf (stderr, "\nParameters contained =  %u \n", count_scan);
+	if(count_scan != (K.PartNum * kDIM) ) goto wrong_parameter_number;
 
-		return -1;
-	}
 	fprintf (stderr, "\n%s read.\n", fname);
 	return 0;
+//EXCEPTIONS
+    wrong_parameter_number:
+    {
+    	fprintf (stderr, "\nFile does not contain 3 parameters, please check %s.\n", fname);
+		fprintf (stderr, "\nParameters contained =  %u \n", count_scan);
+        goto error; 
+    }
+    
+    wrong_file_name:
+    {
+        fprintf(stderr, "\nError opening file %s\n", fname);
+        goto error;
+	}
+    
+    wrong_num_pos_entries:
+	{
+		printf("\nFile does not contain 6 parameters (3 positions and 3 directions), please check %s.\n", fname);
+		printf("\nParameters contained =  %u \n", count_scan);
+        goto error;
+	}
+
+    error:
+    {
+        fprintf(stderr, "\nProgram aborted!!!!\n\n");
+        return -1;
+    }
 }
-
-
 

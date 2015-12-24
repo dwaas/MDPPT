@@ -2,18 +2,12 @@
 #include <stdio.h> //fprintf(); fscan(); sprintf();
 
 
-
 #include "MDConstants.h"
 
 int
 Initialize (MDConstants* K, char argv[])
  {
-    if (!argv)
-    { 
-        fprintf(stderr, "\nWrong string passed: %s;  Program aborted!!!!\n\n", argv);
-        return -1;
-
-    }
+    if (!argv) {goto wrong_string;}
 
 	char fname[60];
 
@@ -22,15 +16,11 @@ Initialize (MDConstants* K, char argv[])
 
 	sprintf(fname, "%s/input.dat", work_dir);
 	FILE *fp;
-	if (!(fp = fopen(fname, "r")) )
-	{
-		fprintf(stderr, "\nError opening file %s;  Program aborted!!!!\n\n", fname);
-		return -1;
-	}
-	
+	if (!(fp = fopen(fname, "r")) ) goto wrong_file_name;
+		
 	
 	unsigned count_scan = 0;
-//TODO compress into 1 for loop
+
 	count_scan += fscanf(fp, "%u", &(K->iteration_num) );
     CountReadUnsigned (&count_scan, fp, K->N, kDIM);
     CountReadDouble (&count_scan, fp, K->L, kDIM);
@@ -44,11 +34,8 @@ Initialize (MDConstants* K, char argv[])
 	count_scan += fscanf(fp, "%d %d", &(K->t_gap) , &(K->deltaS) );
 
 
-	if(count_scan != 17)
-	{
-		fprintf (stderr, "\nWrong number of input parameters, please check %s.\n", fname);
-		return -1;
-	}
+	if(count_scan != 17) goto wrong_input_dat_entries;
+	
 //TODO range evaluation 
 
 	bool invalid_input = K->iteration_num <= 0 ||
@@ -67,12 +54,8 @@ Initialize (MDConstants* K, char argv[])
 
 //kappa and v_0 can be zero
 
-	if(invalid_input)
-	{
-		fprintf(stderr, "\nInput parameters are not valid, please check %s.\n", fname);
-		return -1;
-	}
-
+	if(invalid_input) goto wrong_input_dat_ranges;
+	
 	fclose(fp);
     fp = NULL; //TODO review
  
@@ -104,12 +87,42 @@ Initialize (MDConstants* K, char argv[])
 //TODO unroll dimensional loops
     PrintVals ("L_%u = %f\t", K->L, kDIM);
     PrintVals ("side_minus1_%u = %f\t", K->side_minus1, kDIM);
-       
+
     return 0;
+//EXCEPTIONS    
+    wrong_string:
+    { 
+        fprintf(stderr, "\nWrong string passed: %s\n", argv);
+        goto error;
+    }
+
+    wrong_file_name:
+    {
+		fprintf(stderr, "\nError opening file %s\n", fname);
+        goto error;
+	}
+
+    wrong_input_dat_entries:
+    {
+		fprintf (stderr, "\nWrong number of input parameters, please check %s.\n", fname);
+		goto error;
+	}
+
+    wrong_input_dat_ranges:
+    {
+		fprintf(stderr, "\nInput parameters are not valid, please check %s.\n", fname);
+		goto error;
+	}
+
+    error:
+    {
+        fprintf(stderr, "\nProgram aborted!!!!\n\n");
+        return -1;
+    }
 }
 
 void
-CountReadDouble
+CountReadDouble 
 (
     unsigned* count_scan,
     FILE* fp,
