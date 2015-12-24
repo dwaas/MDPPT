@@ -71,8 +71,8 @@ InitializeTurbVelocities
 		{
 			for (unsigned f = 0; f < K.NF; ++f)
 			{
-				vel[j] += turb_vecs[f].c2n[j] * kraich_modes[i][f].cos;
-				vel[j] += turb_vecs[f].c1n[j] * kraich_modes[i][f].sin;
+				vel[j] += turb_vecs[f].c1n[j] * kraich_modes[i][f].cos;
+				vel[j] += turb_vecs[f].c2n[j] * kraich_modes[i][f].sin;
 			}	
 			if (turb_velocities[i].direction[j] != vel[j])
 			{
