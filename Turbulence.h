@@ -42,6 +42,8 @@ struct turb_field_var
 
 typedef struct turb_field_var TurbField;
 
+typedef double Tensor2[kDIM][kDIM];
+
 int 
 InitializeTurbModes
 (
@@ -61,5 +63,32 @@ InitializeTurbVelocities
 	KraichnanMode** kraich_modes,
 	TurbField* turb_velocities
 );
+
+//TODO call it initialize
+void
+StrainRateTensor
+(
+	Tensor2 S,
+	const MDConstants K,
+	const TurbConstVecs* turb_vecs,
+	const KraichnanMode* modes
+);
+
+//helper functions
+double 
+DotProd 
+(
+	const double vec1[],
+	const double vec2[]
+);
+
+void
+NormalizeVector
+(	
+	const double consts[],
+	const double in_vec[],
+	double out_vec[]
+);
+
 
 #endif /* TURBULENCE_H */

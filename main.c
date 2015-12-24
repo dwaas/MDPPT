@@ -27,6 +27,8 @@ main(int argc, char *argv[])
 {
     Molecule** positions;
     TurbField** turb_velocities;
+    Tensor2** strain_rate;    
+
     TurbConsts* turb;
     TurbConstVecs* turb_vecs;
     KraichnanMode*** kraich_modes;
@@ -51,6 +53,10 @@ main(int argc, char *argv[])
     turb_velocities = (TurbField**) calloc (K.SnapshotNum, sizeof (TurbField*) );
     if (!turb_velocities) goto no_memory;
 
+    strain_rate = (Tensor2**) calloc (K.SnapshotNum, sizeof (Tensor2*) );
+    if (!strain_rate) goto no_memory;
+
+
     kraich_modes = (KraichnanMode***) calloc (K.SnapshotNum, sizeof (KraichnanMode**) );
     if (!kraich_modes) goto no_memory;
 
@@ -58,12 +64,15 @@ main(int argc, char *argv[])
     {
         positions[n] = (Molecule*) calloc (K.PartNum, sizeof (Molecule) );
         if (!positions[n]) goto no_memory;
+
         turb_velocities[n] = (TurbField*) calloc (K.PartNum, sizeof (TurbField) );
         if (!turb_velocities[n]) goto no_memory;
 
+        strain_rate[n] = (Tensor2*) calloc (K.PartNum, sizeof (Tensor2) );
+        if (!strain_rate[n]) goto no_memory;
+
         kraich_modes[n] = (KraichnanMode**) calloc (K.PartNum, sizeof (KraichnanMode*) );
         if (!kraich_modes[n]) goto no_memory;
-
 
         for (unsigned i = 0; i < K.PartNum; ++i)
         {
@@ -126,7 +135,7 @@ main(int argc, char *argv[])
                 t
              )
            ) { goto free_memory; }
-        if ( n > 0)
+/*        if ( n > 0)
         {
             if ( InitializeTurbVelocities
                  (
@@ -137,6 +146,7 @@ main(int argc, char *argv[])
                  )
                ) { goto free_memory; }
         }
+*/
         n++;
     }
     //file reading ends
@@ -148,6 +158,25 @@ main(int argc, char *argv[])
          positions,
          turb_velocities
         );
+    {//test 
+        unsigned n = 0, i = 0;
+
+        StrainRateTensor
+            (
+             strain_rate[n][i],
+             K,
+             turb_vecs,
+             kraich_modes[n][i]
+            );
+
+        for (unsigned k = 0; k < kDIM; ++k)
+        {
+            char message[50] = {0};
+	        sprintf(message, "S[%u][%%u] = %%f\t", k);
+            PrintVals (message, strain_rate[n][i][k], kDIM);
+        }
+
+    }
 
     fprintf (stdout, "Mean kinetic energy = %lf", mean_kinetic_energy);
 	goto free_memory;
@@ -169,6 +198,10 @@ main(int argc, char *argv[])
 			free (turb_velocities[n]);
 			turb_velocities[n] = NULL;
 
+			free (strain_rate[n]);
+			strain_rate[n] = NULL;
+
+
 			for (unsigned i = 0; i < K.PartNum; ++i)
 			{
 				free (kraich_modes[n][i]);
@@ -184,6 +217,9 @@ main(int argc, char *argv[])
 
 		free(turb_velocities);
 		turb_velocities = NULL;	
+
+		free(strain_rate);
+		strain_rate = NULL;	
 
 		free (turb);
 		turb = NULL;

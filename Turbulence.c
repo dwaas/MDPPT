@@ -9,6 +9,12 @@
 #include "Molecule.h" //Molecule
 #include "Turbulence.h" //KraichnanMode
 
+
+
+
+
+
+
 //TODO MDInitialize vorticities
 int
 InitializeTurbModes
@@ -34,12 +40,10 @@ schedule(dynamic, 5000)
 	{
 		for(unsigned modeIndex = 0; modeIndex < K.NF; ++modeIndex)
 		{
-			double kn_dot_x = 0;
+			double pos_vec[kDIM] = {0};
 
-			for (unsigned j = 0; j < kDIM; ++j)
-			{
-				kn_dot_x += turb_vecs[modeIndex].kn[j] * molecule[i].position[j] * K.L[j];
-			}//positions normalized on box length
+			NormalizeVector (K.L, molecule[i].position, pos_vec);
+			double kn_dot_x = DotProd ( turb_vecs[modeIndex].kn, pos_vec);
 
 			unsigned real_time = t * K.delta_t;                
 
@@ -55,6 +59,29 @@ schedule(dynamic, 5000)
 	return 0;
 }
 
+ 
+void
+StrainRateTensor
+(
+	Tensor2 S,
+	const MDConstants K,
+	const TurbConstVecs* turb_vecs,
+	const KraichnanMode* modes
+)
+{
+	for (unsigned f = 0; f < K.NF; ++f)
+	{
+		for (unsigned i = 0; i < kDIM; ++i)
+		{
+			for (unsigned j = 0; j < kDIM; ++j)
+			{
+				S[i][j] -= turb_vecs->c1n[i] * turb_vecs->kn[j] * modes[f].sin;
+				S[i][j] += turb_vecs->c2n[i] * turb_vecs->kn[j] * modes[f].cos;
+			}
+		}
+	}
+	return;
+}
 int
 InitializeTurbVelocities
 (
@@ -91,5 +118,38 @@ InitializeTurbVelocities
 		);
 		return -1;
 	}
+}
+
+
+double 
+DotProd 
+(
+	const double vec1[],
+	const double vec2[]
+)
+{
+	double dot_prod = 0;
+	for (unsigned j = 0; j < kDIM; ++j)
+	{
+		dot_prod += vec1[j] * vec2[j];
+	}//positions normalized on box length
+
+	return dot_prod;
+}
+
+void
+NormalizeVector
+(	
+	const double consts[],
+	const double in_vec[],
+	double out_vec[]
+)
+{
+	for (unsigned j = 0; j < kDIM; ++j)
+	{
+		out_vec[j] = in_vec[j] * consts[j];
+	}
+
+	return;
 }
 
