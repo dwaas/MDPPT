@@ -52,4 +52,14 @@ InitializeTurbModes
      KraichnanMode** kraich_modes,
      unsigned itime
 );
+
+int
+InitializeTurbVelocities
+(
+	MDConstants K,
+	TurbConstVecs* turb_vecs,
+	KraichnanMode** kraich_modes,
+	TurbField* turb_velocities
+);
+
 #endif /* TURBULENCE_H */

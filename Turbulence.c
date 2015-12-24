@@ -54,3 +54,42 @@ schedule(dynamic, 5000)
 	}
 	return 0;
 }
+
+int
+InitializeTurbVelocities
+(
+	MDConstants K,
+	TurbConstVecs* turb_vecs,
+	KraichnanMode** kraich_modes,
+	TurbField* turb_velocities
+)
+{
+	for (unsigned i = 0; i < K.PartNum; ++i)
+	{
+		double vel[kDIM] = {0};//temp array
+		for (unsigned j = 0; j < kDIM; ++j)
+		{
+			for (unsigned f = 0; f < K.NF; ++f)
+			{
+				vel[j] += turb_vecs[f].c2n[j] * kraich_modes[i][f].cos;
+				vel[j] += turb_vecs[f].c1n[j] * kraich_modes[i][f].sin;
+			}	
+			if (turb_velocities[i].direction[j] != vel[j])
+			{
+				goto error;
+			}
+		}	
+	}
+	return 0;
+//TODO make this a test case
+	error:
+	{
+		fprintf 
+		(
+			stderr,
+			"the algorithm doesn't generate the correct velocities"
+		);
+		return -1;
+	}
+}
+

@@ -29,7 +29,7 @@ main(int argc, char *argv[])
     TurbField** turb_velocities;
     TurbConsts* turb;
     TurbConstVecs* turb_vecs;
-
+    KraichnanMode*** kraich_modes;
 
     //ARGUMENT CHECK	
     if (argc != 2) //TODO improve interface 
@@ -51,7 +51,7 @@ main(int argc, char *argv[])
     turb_velocities = (TurbField**) calloc (K.SnapshotNum, sizeof (TurbField*) );
     if (!turb_velocities) goto no_memory;
 
-    KraichnanMode*** kraich_modes = (KraichnanMode***) calloc (K.SnapshotNum, sizeof (KraichnanMode**) );
+    kraich_modes = (KraichnanMode***) calloc (K.SnapshotNum, sizeof (KraichnanMode**) );
     if (!kraich_modes) goto no_memory;
 
     for (unsigned n = 0; n < K.SnapshotNum; ++n) 
@@ -126,6 +126,17 @@ main(int argc, char *argv[])
                 t
              )
            ) { goto free_memory; }
+        if ( n > 0)
+        {
+            if ( InitializeTurbVelocities
+                 (
+                   K,
+                   turb_vecs,
+                   kraich_modes[n],
+                   turb_velocities[n] 
+                 )
+               ) { goto free_memory; }
+        }
         n++;
     }
     //file reading ends
