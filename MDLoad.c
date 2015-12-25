@@ -110,7 +110,7 @@ MDLoad
 
     for (unsigned i = 0; i < K.PartNum; ++i)
     {
-            count_scan += fread(&turb_field[i], sizeof(double), kDIM, fp);
+        count_scan += fread(&turb_field[i], sizeof(double), kDIM, fp);
     } 
 
     fclose(fp);
