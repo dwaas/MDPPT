@@ -21,4 +21,28 @@ MeanStrainRateTensor
     MDConstants K,
     Molecule** positions
 );
+
+double
+KineticEnergy
+(
+    const double v[kDIM]
+);
+
+void
+SumVector
+(
+    const double in_vec1[],
+    const double in_vec2[],
+    double out_vec[]
+);
+
+void
+InitConstArray
+(
+    double vec[],
+    unsigned size,
+    const double k
+);
+
+//TODO gsl_vector
 #endif /* MDPOSTPROCESSING_H */

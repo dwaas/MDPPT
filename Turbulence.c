@@ -9,12 +9,6 @@
 #include "Molecule.h" //Molecule
 #include "Turbulence.h" //KraichnanMode
 
-
-
-
-
-
-
 //TODO MDInitialize vorticities
 int
 InitializeTurbModes
@@ -82,6 +76,7 @@ StrainRateTensor
 	}
 	return;
 }
+
 int
 InitializeTurbVelocities
 (
@@ -152,4 +147,5 @@ NormalizeVector
 
 	return;
 }
+
 
