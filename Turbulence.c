@@ -1,5 +1,6 @@
 #include <assert.h> //assert()
 #include <math.h> //cos (); sin ()
+#include <stdlib.h> //free, calloc
 
 
 
@@ -8,6 +9,14 @@
 #include "MDConstants.h" //MDConstants
 #include "Molecule.h" //Molecule
 #include "Turbulence.h" //KraichnanMode
+
+void 
+MeanStrainRateTensor
+(
+	const Tensor2** S,
+	const MDConstants K,
+    Tensor2 meanS	
+);
 
 //TODO MDInitialize vorticities
 int
@@ -77,6 +86,75 @@ StrainRateTensor
 	return;
 }
 
+void 
+MeanStrainRateTensor
+(
+	const Tensor2** S,
+	const MDConstants K,
+    Tensor2 meanS	
+)
+{
+    Tensor2* tempS = (Tensor2*) calloc (K.SnapshotNum, sizeof (Tensor2) );
+    if (!tempS) goto no_memory;
+
+
+	for (unsigned t = 0; t < K.SnapshotNum; ++t)
+	{
+		for (unsigned k = 0; k < K.PartNum; ++k)
+		{
+			// sum tensor
+			for (unsigned i = 0; i < kDIM; ++i)
+			{
+				for (unsigned j = 0; j < kDIM; ++j)
+				{
+					tempS[t][i][j] += S[t][k][i][j];
+				}
+			}
+		}
+		//divide tensor
+		for (unsigned i = 0; i < kDIM; ++i)
+		{
+			for (unsigned j = 0; j < kDIM; ++j)
+			{
+				tempS[t][i][j] /= K.PartNum;
+			}
+		}
+			
+		// sum tensor
+			for (unsigned i = 0; i < kDIM; ++i)
+			{
+				for (unsigned j = 0; j < kDIM; ++j)
+				{
+					meanS[i][j] += tempS[t][i][j];
+				}
+			}
+
+		//divide tensor
+		for (unsigned i = 0; i < kDIM; ++i)
+		{
+			for (unsigned j = 0; j < kDIM; ++j)
+			{
+				meanS[i][j] /= K.SnapshotNum;
+			}
+		}
+	}
+
+	free_memory:
+	{
+		free(tempS);
+		tempS = NULL;	
+	}
+
+	//TODO assert that meanS is initialized to 0
+	return;
+
+//EXCEPTIONS
+	no_memory:
+	{
+		fprintf(stderr, "no memory\n");
+		goto free_memory;
+	}
+}
 int
 InitializeTurbVelocities
 (
