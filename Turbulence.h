@@ -66,7 +66,7 @@ InitializeTurbVelocities
 
 //TODO call it initialize
 void
-StrainRateTensor
+InitializeStrainRateTensor
 (
 	Tensor2 S,
 	const MDConstants K,
@@ -112,6 +112,14 @@ SumTensor
 	const Tensor2 S
 );
 
+
+void
+MeanTensor
+(	
+	Tensor2 meanS,
+	const Tensor2* S,
+	const unsigned size
+);
 
 
 #endif /* TURBULENCE_H */

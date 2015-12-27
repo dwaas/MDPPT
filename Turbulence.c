@@ -56,7 +56,7 @@ schedule(dynamic, 5000)
 
  
 void
-StrainRateTensor
+InitializeStrainRateTensor
 (
 	Tensor2 S,
 	const MDConstants K,
@@ -78,39 +78,6 @@ StrainRateTensor
 	return;
 }
 
-void
-SumTensor
-(
-	Tensor2 tempS,
-	const Tensor2 S
-)
-{
-	for (unsigned i = 0; i < kDIM; ++i)
-	{
-		for (unsigned j = 0; j < kDIM; ++j)
-		{
-			tempS[i][j] += S[i][j];
-		}
-	}
-	return;
-}
-void
-DivideTensor
-(
-	Tensor2 S,
-	const double K
-)
-{
-	//divide tensor
-	for (unsigned i = 0; i < kDIM; ++i)
-	{
-		for (unsigned j = 0; j < kDIM; ++j)
-		{
-			S[i][j] /= K;
-		}
-	}
-	return;
-}
 void 
 MeanStrainRateTensor
 (
@@ -125,16 +92,9 @@ MeanStrainRateTensor
 
 	for (unsigned t = 0; t < K.SnapshotNum; ++t)
 	{
-		for (unsigned k = 0; k < K.PartNum; ++k)
-		{
-			SumTensor (tempS[t], S[t][k]);
-		}
-
-		DivideTensor (tempS[t], K.PartNum);
-
-		SumTensor (meanS, tempS[t]);
+		MeanTensor ( tempS[t], S[t], K.PartNum );
 	}
-	DivideTensor (meanS, K.SnapshotNum);
+	MeanTensor ( meanS, tempS, K.SnapshotNum );
 
 free_memory:
 	{
@@ -224,4 +184,55 @@ NormalizeVector
 	return;
 }
 
+
+void
+SumTensor
+(
+	Tensor2 tempS,
+	const Tensor2 S
+)
+{
+	for (unsigned i = 0; i < kDIM; ++i)
+	{
+		for (unsigned j = 0; j < kDIM; ++j)
+		{
+			tempS[i][j] += S[i][j];
+		}
+	}
+	return;
+}
+void
+DivideTensor
+(
+	Tensor2 S,
+	const double K
+)
+{
+	//divide tensor
+	for (unsigned i = 0; i < kDIM; ++i)
+	{
+		for (unsigned j = 0; j < kDIM; ++j)
+		{
+			S[i][j] /= K;
+		}
+	}
+	return;
+}
+
+void
+MeanTensor
+(	
+	Tensor2 meanS,
+	const Tensor2* S,
+	const unsigned size
+)
+{
+	for (unsigned k = 0; k < size; ++k)
+	{
+		SumTensor (meanS, S[k]);
+	}
+	DivideTensor (meanS, size);
+
+	return;
+}
 

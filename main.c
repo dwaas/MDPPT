@@ -153,7 +153,7 @@ main (int argc, char *argv[])
 //init strain rate tensor
         for (unsigned i = 0; i < K.PartNum; ++i)
         {
-            StrainRateTensor
+            InitializeStrainRateTensor
                 (
                      strain_rate[n][i],
                      K,
