@@ -133,8 +133,8 @@ MeanStrainRateTensor
 		DivideTensor (tempS[t], K.PartNum);
 
 		SumTensor (meanS, tempS[t]);
-		DivideTensor (meanS, K.SnapshotNum);
 	}
+	DivideTensor (meanS, K.SnapshotNum);
 
 free_memory:
 	{
