@@ -78,6 +78,39 @@ StrainRateTensor
 	return;
 }
 
+void
+SumTensor
+(
+	Tensor2 tempS,
+	const Tensor2 S
+)
+{
+	for (unsigned i = 0; i < kDIM; ++i)
+	{
+		for (unsigned j = 0; j < kDIM; ++j)
+		{
+			tempS[i][j] += S[i][j];
+		}
+	}
+	return;
+}
+void
+DivideTensor
+(
+	Tensor2 S,
+	const double K
+)
+{
+	//divide tensor
+	for (unsigned i = 0; i < kDIM; ++i)
+	{
+		for (unsigned j = 0; j < kDIM; ++j)
+		{
+			S[i][j] /= K;
+		}
+	}
+	return;
+}
 void 
 MeanStrainRateTensor
 (
@@ -94,41 +127,13 @@ MeanStrainRateTensor
 	{
 		for (unsigned k = 0; k < K.PartNum; ++k)
 		{
-			// sum tensor
-			for (unsigned i = 0; i < kDIM; ++i)
-			{
-				for (unsigned j = 0; j < kDIM; ++j)
-				{
-					tempS[t][i][j] += S[t][k][i][j];
-				}
-			}
-		}
-		//divide tensor
-		for (unsigned i = 0; i < kDIM; ++i)
-		{
-			for (unsigned j = 0; j < kDIM; ++j)
-			{
-				tempS[t][i][j] /= K.PartNum;
-			}
+			SumTensor (tempS[t], S[t][k]);
 		}
 
-		// sum tensor
-		for (unsigned i = 0; i < kDIM; ++i)
-		{
-			for (unsigned j = 0; j < kDIM; ++j)
-			{
-				meanS[i][j] += tempS[t][i][j];
-			}
-		}
+		DivideTensor (tempS[t], K.PartNum);
 
-		//divide tensor
-		for (unsigned i = 0; i < kDIM; ++i)
-		{
-			for (unsigned j = 0; j < kDIM; ++j)
-			{
-				meanS[i][j] /= K.SnapshotNum;
-			}
-		}
+		SumTensor (meanS, tempS[t]);
+		DivideTensor (meanS, K.SnapshotNum);
 	}
 
 free_memory:

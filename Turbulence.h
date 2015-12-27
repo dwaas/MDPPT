@@ -99,5 +99,19 @@ NormalizeVector
 	double out_vec[]
 );
 
+void
+DivideTensor
+(
+	Tensor2 S,
+	const double K
+);
+void
+SumTensor
+(
+	Tensor2 tempS,
+	const Tensor2 S
+);
+
+
 
 #endif /* TURBULENCE_H */

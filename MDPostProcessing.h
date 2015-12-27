@@ -15,12 +15,6 @@ MeanKineticEnergy
     Molecule** positions,
     TurbField** turb_velocities
 );
-double
-MeanStrainRateTensor
-(
-    MDConstants K,
-    Molecule** positions
-);
 
 double
 KineticEnergy
