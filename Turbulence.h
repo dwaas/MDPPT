@@ -74,6 +74,15 @@ StrainRateTensor
 	const KraichnanMode* modes
 );
 
+void 
+MeanStrainRateTensor
+(
+	Tensor2** S,
+	MDConstants K,
+    Tensor2 meanS	
+);
+
+
 //helper functions
 double 
 DotProd 

@@ -5,20 +5,12 @@
 #include "MDPostProcessing.h"
 
 double
-FunctionAverage
-(
-    const double array[],
-    const unsigned size,
-    double (*f) (double)
-);
-
-double
 MeanKineticEnergy
 (
     MDConstants K,
     Molecule **positions,
 	TurbField **turb_velocities
-    )
+)
 {
     double time_mean = 0;
 
@@ -52,24 +44,6 @@ MeanKineticEnergy
 }
 
 //TODO use fma()
-
-double
-FunctionAverage
-(
-    const double array[],
-    const unsigned size,
-    double (*f) (double)
-)
-{   
-    double sum = 0;   
-    for (unsigned i = 0; i < size; ++i)
-    {
-        sum += f(array[i]);
-
-    }
-
-    return sum / size;
-}
 
 double
 KineticEnergy

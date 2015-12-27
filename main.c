@@ -23,7 +23,7 @@
 char work_dir[40]; //TODO find a safer way
 
 int
-main(int argc, char *argv[])
+main (int argc, char *argv[])
 {
     Molecule** positions;
     TurbField** turb_velocities;
@@ -109,6 +109,7 @@ main(int argc, char *argv[])
     fprintf(stderr, "\nReading data files...     ");
     /*      loop over all files        */
 
+    Tensor2 meanS = {{0}};
     for (unsigned t = 0, n = 0;  t < K.iteration_num; t += K.t_gap) 
     {
         assert (n < K.SnapshotNum);
@@ -147,7 +148,20 @@ main(int argc, char *argv[])
                ) { goto free_memory; }
         }
 */
-        n++;
+//FIXME generated turb velocities are not the same as the ones contained in the .pos!
+
+//init strain rate tensor
+        for (unsigned i = 0; i < K.PartNum; ++i)
+        {
+            StrainRateTensor
+                (
+                     strain_rate[n][i],
+                     K,
+                     turb_vecs,
+                     kraich_modes[n][i]
+                );
+        } 
+          n++;
     }
     //file reading ends
     //calc kinetic energy
@@ -158,24 +172,20 @@ main(int argc, char *argv[])
          positions,
          turb_velocities
         );
-    {//test 
-        unsigned n = 0, i = 0;
 
-        StrainRateTensor
-            (
-             strain_rate[n][i],
-             K,
-             turb_vecs,
-             kraich_modes[n][i]
-            );
 
-        for (unsigned k = 0; k < kDIM; ++k)
-        {
-            char message[50] = {0};
-	        sprintf(message, "S[%u][%%u] = %%f\t", k);
-            PrintVals (message, strain_rate[n][i][k], kDIM);
-        }
+    MeanStrainRateTensor
+    (
+         strain_rate,
+         K,
+         meanS
+    ); 
 
+    for (unsigned k = 0; k < kDIM; ++k)
+    {
+        char message[50] = {0};
+        sprintf(message, "S[%u][%%u] = %%f\t", k);
+        PrintVals (message, meanS[k], kDIM);
     }
 
     fprintf (stdout, "Mean kinetic energy = %lf", mean_kinetic_energy);
