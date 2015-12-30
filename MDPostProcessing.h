@@ -11,9 +11,9 @@
 double
 MeanKineticEnergy
 (
-    MDConstants K,
-    Molecule** positions,
-    TurbField** turb_velocities
+    const MDConstants K,
+    const Molecule** positions,
+    const TurbField** turb_velocities
 );
 
 double

@@ -13,13 +13,13 @@ int
 TurbConstsLoad 
 (
     const MDConstants K,
+    const char fname[],
  	TurbConsts* turb,
  	TurbConstVecs* turb_vecs
 )
 {
-	char fname[60];	
-    sprintf(fname, "%s/turbulence.pos", work_dir);
-   	FILE* fp = fopen(fname, "r");
+   	FILE* fp;
+    fp = fopen(fname, "r");
 
     unsigned count_scan = 0;
 
@@ -54,18 +54,14 @@ int
 MDLoadPos
 (
     const MDConstants K, 
-    Molecule* molecule, 
-    const unsigned next_loop //current timestep
+    const char fname[],
+    Molecule* molecule
 )
 {
 	//TODO check that K is initialised; check input is valid.
-	assert (next_loop <= K.iteration_num);
 
 
-    char fname[60];
     FILE *fp;
-
-	sprintf(fname,"%s/t-%d.pos",work_dir, next_loop);
  	if ( !(fp = fopen(fname, "r")) ) goto wrong_file_name;
 		
     unsigned count_scan = 0;
@@ -127,15 +123,11 @@ int
 MDLoadTurb 
 (
     const MDConstants K, 
-	TurbField* turb_field,
-    const unsigned next_loop //current timestep
+    const char fname[],
+	TurbField* turb_field
 )
 {
     FILE *fp;
-	char fname[60];	
-
-	sprintf(fname,"%s/turbField-%d.pos",work_dir, next_loop);
-    fp = fopen(fname, "r");
  	if ( !(fp = fopen(fname, "r") ) ) goto wrong_file_name;
 	
     unsigned count_scan = 0;
@@ -176,18 +168,13 @@ int
 MDLoadDir
 (
     const MDConstants K, 
-    Molecule* molecule, 
-    const unsigned next_loop //current timestep
+    const char fname[],
+    Molecule* molecule
 )
 {
 	//TODO check that K is initialised; check input is valid.
-	assert (next_loop <= K.iteration_num);
-
-
-    char fname[60];
     FILE *fp;
 
-	sprintf(fname,"%s/t-%d.pos",work_dir, next_loop);
  	if ( !(fp = fopen(fname, "r")) ) goto wrong_file_name;
 		
     unsigned count_scan = 0;

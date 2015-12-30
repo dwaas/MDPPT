@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-
+#include "debug.h"
 
 #include "MDConstants.h" //MDConstants;
 #include "MDLoad.h" // MDLoad();
@@ -19,36 +19,41 @@
 //TODO testsuite: wrong args, wrong input file, wrong data in input file, no memory
 
 
-
-char work_dir[40]; //TODO find a safer way
-
 int
 main (int argc, char *argv[])
 {
-    Molecule** positions;
-    TurbField** turb_velocities;
-    Tensor2** strain_rate;    
+	check (
+			argc == 2,
+			"\nNumber of arguments is wrong! \
+			\nusage: ./post_proc working_directory_path!!!!\n\n"
+		  );
 
-    TurbConsts* turb;
-    TurbConstVecs* turb_vecs;
-    KraichnanMode*** kraich_modes;
+    char work_dir[40];
+	sprintf (work_dir, "%s", argv[1]);
 
-    //ARGUMENT CHECK	
-    if (argc != 2) //TODO improve interface 
-    {
-        fprintf(stderr, "\nError! Number of arguments is wrong! usage: ./post_proc working_directory_path!!!!\n\n");
-        goto exit;
-    }
+
+    Molecule** positions = NULL;
+    TurbField** turb_velocities = NULL;
+    Tensor2** strain_rate = NULL;    
+
+    TurbConsts* turb = NULL;
+    TurbConstVecs* turb_vecs = NULL;
+    KraichnanMode*** kraich_modes = NULL;
+
 
     //CONSTANTS
     MDConstants K;
-    MDConstants* K_ptr = &K;
-    if ( Initialize (K_ptr, argv[1]) ) goto exit;
-    //NOTE: work_dir is now initialised
+    char input_dat[60];
+	sprintf (input_dat, "%s/input.dat", work_dir);
+	check 
+		(
+			!Initialize (&K, input_dat), 
+			"Constant init failed" 
+		);
 
     //allocate 
     positions = (Molecule**) calloc (K.SnapshotNum, sizeof (Molecule*) );
-    if (!positions) goto no_memory;
+	check_mem (positions);
 
     turb_velocities = (TurbField**) calloc (K.SnapshotNum, sizeof (TurbField*) );
     if (!turb_velocities) goto no_memory;
@@ -70,7 +75,7 @@ main (int argc, char *argv[])
 
         strain_rate[n] = (Tensor2*) calloc (K.PartNum, sizeof (Tensor2) );
         if (!strain_rate[n]) goto no_memory;
-
+		//kraich_modes[n] = NULL;
         kraich_modes[n] = (KraichnanMode**) calloc (K.PartNum, sizeof (KraichnanMode*) );
         if (!kraich_modes[n]) goto no_memory;
 
@@ -93,9 +98,14 @@ main (int argc, char *argv[])
     //end allocation
 
     //Initialise turb constants
+    char turb_pos[40];
+    sprintf(turb_pos, "%s/turbulence.pos", work_dir);
+
+
     if (TurbConstsLoad 
         (   
 			K,
+            turb_pos,
             turb,
             turb_vecs
         )
@@ -118,30 +128,31 @@ main (int argc, char *argv[])
         //TODO load turbulence.pos only once!!
 
         char fname[60];
-        sprintf(fname,"%s/t-%d.pos",work_dir, t);
+        sprintf (fname, "%s/t-%d.pos", work_dir, t);
 
        if ( MDLoadPos
             (
              K,
-             positions[n],
-             t 
+             fname,
+             positions[n] 
             )
            ) { goto free_memory; }
 
+       sprintf (fname, "%s/t-%d.pos", work_dir, t);
        if ( MDLoadDir
             (
              K,
-             positions[n],
-             t 
+             fname,
+             positions[n] 
             )
            ) { goto free_memory; }
-
-
+       
+       sprintf (fname, "%s/turbField-%d.pos", work_dir, t);
        if ( MDLoadTurb
             (
              K,
-             turb_velocities[n], 
-             t 
+             fname,
+             turb_velocities[n] 
             )
            ) { goto free_memory; }
 
@@ -188,18 +199,18 @@ main (int argc, char *argv[])
     double mean_kinetic_energy =
         MeanKineticEnergy 
         (
-         K,
-         positions,
-         turb_velocities
+         (const MDConstants) K,
+         (const Molecule**) positions,
+         (const TurbField**) turb_velocities
         );
 
-
-    MeanStrainRateTensor
-    (
-         strain_rate,
-         K,
-         meanS
-    ); 
+    if( MeanStrainRateTensor
+        (
+             (const Tensor2**) strain_rate,
+             (const MDConstants) K,
+             meanS
+        )
+      ) goto free_memory;
 
     for (unsigned k = 0; k < kDIM; ++k)
     {
@@ -267,5 +278,9 @@ main (int argc, char *argv[])
     {
         return 0;
     }
+	error:
+	{
+		return -1;
+	}
 }
 

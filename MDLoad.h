@@ -9,12 +9,12 @@
 
 
 
-extern char work_dir[];
 
 int
 TurbConstsLoad 
 (
     const MDConstants K,
+    const char fname[],
     TurbConsts* turb,
     TurbConstVecs* turb_vecs
 );
@@ -23,8 +23,8 @@ int
 MDLoadDir
 (
     const MDConstants K, 
-    Molecule* molecule, 
-    const unsigned next_loop
+    const char fname[],
+    Molecule* molecule 
 );
 
 
@@ -32,16 +32,16 @@ int
 MDLoadPos
 (
     const MDConstants K, 
-    Molecule* molecule, 
-    const unsigned next_loop
+    const char fname[],
+    Molecule* molecule 
 );
 
 int
 MDLoadTurb
 (
     const MDConstants K, 
-    TurbField* turb_field,
-    const unsigned next_loop
+    const char fname[],
+    TurbField* turb_field
 );
 
 int

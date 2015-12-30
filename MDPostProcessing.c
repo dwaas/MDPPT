@@ -7,9 +7,9 @@
 double
 MeanKineticEnergy
 (
-    MDConstants K,
-    Molecule **positions,
-	TurbField **turb_velocities
+    const MDConstants K,
+    const Molecule **positions,
+	const TurbField **turb_velocities
 )
 {
     double time_mean = 0;
@@ -22,8 +22,8 @@ MeanKineticEnergy
         {		
             double v_part[kDIM] = {0};
             double v_0[kDIM];  
-            InitConstArray (v_0, kDIM, K.v_0);
-			// v_0 * \vec{e_part}
+            InitConstArray (v_0, kDIM, K.v_0);// v_0 * \vec{e_part}
+
             NormalizeVector (v_0, positions[n][i].direction, v_part);
             double v[kDIM]; //temp array
             SumVector (v_part, turb_velocities[n][i].direction, v);
@@ -80,7 +80,7 @@ void
 InitConstArray
 (
     double vec[],
-    unsigned size,
+    const unsigned size,
     const double k
 )
 {

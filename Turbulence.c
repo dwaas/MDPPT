@@ -6,6 +6,7 @@
 
 
 
+#include "debug.h"
 #include "MDConstants.h" //MDConstants
 #include "Molecule.h" //Molecule
 #include "Turbulence.h" //KraichnanMode
@@ -14,12 +15,12 @@
 int
 InitializeTurbModes
 (
-	MDConstants K,
-	Molecule* molecule,
-	TurbConstVecs* turb_vecs,
-	TurbConsts* turb,
+	const MDConstants K,
+	const Molecule* molecule,
+	const TurbConstVecs* turb_vecs,
+	const TurbConsts* turb,
 	KraichnanMode** kraich_modes,
-	unsigned t
+	const unsigned t
 )
 {
 	assert (t < K.iteration_num);
@@ -78,16 +79,16 @@ InitializeStrainRateTensor
 	return;
 }
 
-void 
+int 
 MeanStrainRateTensor
 (
-	Tensor2** S,
-	MDConstants K,
+	const Tensor2** S,
+	const MDConstants K,
     Tensor2 meanS	
 )
 {
 	Tensor2* tempS = (Tensor2*) calloc (K.SnapshotNum, sizeof (Tensor2) );
-	if (!tempS) goto no_memory;
+	check_mem (tempS);
 
 
 	for (unsigned t = 0; t < K.SnapshotNum; ++t)
@@ -96,29 +97,23 @@ MeanStrainRateTensor
 	}
 	MeanTensor ( meanS, tempS, K.SnapshotNum );
 
-free_memory:
-	{
-		free(tempS);
-		tempS = NULL;	
-	}
 
 	//TODO assert that meanS is initialized to 0
-	return;
+	return 0;
 
-	//EXCEPTIONS
-no_memory:
+	error:
 	{
-		fprintf(stderr, "no memory\n");
-		goto free_memory;
+		if (tempS) free (tempS);
+		return -1;
 	}
 }
 
 int
 InitializeTurbVelocities
 (
-	MDConstants K,
-	TurbConstVecs* turb_vecs,
-	KraichnanMode** kraich_modes,
+	const MDConstants K,
+	const TurbConstVecs* turb_vecs,
+	const KraichnanMode** kraich_modes,
 	TurbField* turb_velocities
 )
 {

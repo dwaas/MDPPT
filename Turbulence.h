@@ -47,20 +47,20 @@ typedef double Tensor2[kDIM][kDIM];
 int 
 InitializeTurbModes
 (
-     MDConstants K,
-     Molecule* molecule,
-     TurbConstVecs* turb_vecs,
-     TurbConsts* turb,
+     const MDConstants K,
+     const Molecule* molecule,
+     const TurbConstVecs* turb_vecs,
+     const TurbConsts* turb,
      KraichnanMode** kraich_modes,
-     unsigned itime
+     const unsigned itime
 );
 
 int
 InitializeTurbVelocities
 (
-	MDConstants K,
-	TurbConstVecs* turb_vecs,
-	KraichnanMode** kraich_modes,
+	const MDConstants K,
+	const TurbConstVecs* turb_vecs,
+	const KraichnanMode** kraich_modes,
 	TurbField* turb_velocities
 );
 
@@ -74,11 +74,11 @@ InitializeStrainRateTensor
 	const KraichnanMode* modes
 );
 
-void 
+int 
 MeanStrainRateTensor
 (
-	Tensor2** S,
-	MDConstants K,
+	const Tensor2** S,
+	const MDConstants K,
     Tensor2 meanS	
 );
 

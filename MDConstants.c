@@ -1,22 +1,16 @@
+#include <assert.h>
 #include <stdbool.h> //bool
 #include <stdio.h> //fprintf(); fscan(); sprintf();
 
-
+#include "debug.h"
 #include "MDConstants.h"
 
 int
-Initialize (MDConstants* K, char argv[])
- {
-    if (!argv) {goto wrong_string;}
-
-	char fname[60];
-
-//READ INPUT.DAT
-	sprintf(work_dir, "%s", argv);
-
-	sprintf(fname, "%s/input.dat", work_dir);
-	FILE *fp;
-	if (!(fp = fopen(fname, "r")) ) goto wrong_file_name;
+Initialize (MDConstants* K, const char fname[])
+{
+	FILE *fp = NULL;
+	fp = fopen(fname, "r");
+	check (fp, "\nWrong filename passed: %s\n", fname);
 		
 	
 	unsigned count_scan = 0;
@@ -34,7 +28,11 @@ Initialize (MDConstants* K, char argv[])
 	count_scan += fscanf(fp, "%d %d", &(K->t_gap) , &(K->deltaS) );
 
 
-	if(count_scan != 17) goto wrong_input_dat_entries;
+	check ( (count_scan == 17), 
+			"\nWrong number of input parameters, please check:\
+			 \n%s\n", 
+			fname
+		  );
 	
 //TODO range evaluation 
 
@@ -53,26 +51,19 @@ Initialize (MDConstants* K, char argv[])
     }
 
 //kappa and v_0 can be zero
-
-	if(invalid_input) goto wrong_input_dat_ranges;
+	check (
+			!invalid_input,
+			 "\nInvalid value ranges, please check:\
+			 \n%s.\n",
+			 fname
+		  );
 	
 	fclose(fp);
     fp = NULL; //TODO review
  
 //READ INPUT.DAT ENDS
+	CalcConsts (K); //Derived constants
 
-//INIT CONSTS
-    K->PartNum = 1;
-    for (unsigned j = 0; j < kDIM; ++j)
-    {
-        K->PartNum *= K->N[j];
-        K->side_minus1[j] = 1.0 / K->L[j]; 
-    }
-//TODO better exceptions: at the moment free runs also on non yet allocated arrays => causes segfault
-    K->PartNum = (const unsigned) K->PartNum;
-	K->SnapshotNum = (const unsigned) ((K->iteration_num / K->t_gap) + 1);//we count snapshot 0 as well
-
-//INIT CONSTS ends
 	fprintf
     (
         stderr, 
@@ -89,38 +80,33 @@ Initialize (MDConstants* K, char argv[])
     PrintVals ("side_minus1_%u = %f\t", K->side_minus1, kDIM);
 
     return 0;
-//EXCEPTIONS    
-    wrong_string:
-    { 
-        fprintf(stderr, "\nWrong string passed: %s\n", argv);
-        goto error;
-    }
 
-    wrong_file_name:
-    {
-		fprintf(stderr, "\nError opening file %s\n", fname);
-        goto error;
-	}
-
-    wrong_input_dat_entries:
-    {
-		fprintf (stderr, "\nWrong number of input parameters, please check %s.\n", fname);
-		goto error;
-	}
-
-    wrong_input_dat_ranges:
-    {
-		fprintf(stderr, "\nInput parameters are not valid, please check %s.\n", fname);
-		goto error;
-	}
-
-    error:
+	error:
     {
         fprintf(stderr, "\nProgram aborted!!!!\n\n");
         return -1;
     }
 }
 
+void
+CalcConsts
+(
+	MDConstants* K
+)
+{
+	//INIT CONSTS
+    K->PartNum = 1;
+    for (unsigned j = 0; j < kDIM; ++j)
+    {
+        K->PartNum *= K->N[j];
+        K->side_minus1[j] = 1.0 / K->L[j]; 
+    }
+    K->PartNum = (const unsigned) K->PartNum;
+	K->SnapshotNum = (const unsigned) ((K->iteration_num / K->t_gap) + 1);//we count snapshot 0 as well
+
+
+	return;
+}
 void
 CountReadDouble 
 (

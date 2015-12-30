@@ -30,9 +30,12 @@ typedef struct MDConstants
 } MDConstants;
 
 int
-Initialize (MDConstants* MDConsts, char argv[]);
+Initialize 
+(
+    MDConstants* MDConsts,
+    const char input[]
+);
 
-extern char work_dir[];
 
 //helper functions
 void
@@ -61,5 +64,11 @@ CountReadDouble
     unsigned dim
 );
 
+
+void
+CalcConsts
+(
+	MDConstants* K
+);
 
 #endif /* MDCONSTANTS_H */
