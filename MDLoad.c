@@ -1,6 +1,9 @@
 #include <assert.h> //assert
 #include <stdio.h> // FILE; fprintf(), fread()
 
+
+#include "debug.h"
+
 #include "MDConstants.h" //MDConstants
 #include "MDLoad.h" 
 #include "Molecule.h" // Molecule
@@ -19,7 +22,12 @@ TurbConstsLoad
 )
 {
    	FILE* fp;
-    fp = fopen(fname, "r");
+    check
+	(
+		 (fp = fopen (fname, "r")),
+		 "\nError opening file %s\n", 
+		 fname
+	);
 
     unsigned count_scan = 0;
 
@@ -34,16 +42,26 @@ TurbConstsLoad
 		count_scan += fread (&turb_vecs[i].c2n, sizeof(double), kDIM, fp);
 //TODO fread vs fscanf
 	}
-    fclose(fp);
-
-    if(count_scan != K.NF * 13) goto wrong_pos_number; //TOOD macro to get the third argument of fread
+	
+	check 
+	(
+		(count_scan == K.NF * 13),
+        "Wrong number of turbulence points in:\
+		\n%s\
+		\nnum = %u",
+		fname,
+		count_scan
+	);
+    //TODO macro to get the third argument of fread
 
    	fprintf (stderr, "\n%s read.\n", fname);
+    fclose(fp);
+
 	return 0;
 
-	wrong_pos_number:
+	error:
 	{
-        fprintf (stderr, "Wrong number of turbulence points in %s.\n", fname);
+		fclose(fp);
 		return -1;
     }
 }
@@ -60,9 +78,13 @@ MDLoadPos
 {
 	//TODO check that K is initialised; check input is valid.
 
-
-    FILE *fp;
- 	if ( !(fp = fopen(fname, "r")) ) goto wrong_file_name;
+   	FILE* fp;
+    check
+	(
+		 (fp = fopen (fname, "r")),
+		 "\nError opening file %s\n", 
+		 fname
+	);
 		
     unsigned count_scan = 0;
 //TODO find tests for directions and turb velocities too
@@ -76,13 +98,16 @@ MDLoadPos
 		count_scan += fread(&pos, sizeof(double), kDIM, fp);
         for (unsigned j = 0; j < kDIM; ++j)
         {
-            if ( pos[j] < K.L[j] / (-2.0) || pos[j] > K.L[j] / 2.0 )
-            {
-                printf("\nThe particles in the %u-th positions \
-                        are not in the expexpected range for this simulation,\
-                        please check %s.\n", j, fname);
-                goto error;
-            }//pos[] is loaded with values within the valid range
+			check 
+			(
+				!(pos[j] < K.L[j] / (-2.0) || pos[j] > K.L[j] / 2.0),
+				"The particles in the %u-th position\
+                are not in the expected range for this simulation,\
+                please check\
+				\n%s\n", 
+				j, 
+				fname
+			);
 
             molecule[i].position[j] = K.side_minus1[j] * pos[j];
         }// molecule.position[] and molecule.direction[] are initialized		
@@ -90,33 +115,27 @@ MDLoadPos
     } 
 
 
-    fclose(fp);
 
-	if(count_scan != (K.PartNum * kDIM) ) goto wrong_num_pos_entries;
-
+	check 
+	(
+		(count_scan == K.PartNum * kDIM),
+        "Wrong number of turbulence points in:\
+		\n%s\
+		\nnum = %u",
+		fname,
+		count_scan
+	);
+ 
 	fprintf (stderr, "\n%s read.\n", fname);
+    fclose(fp);
 	
 	return 0;
-//EXCEPTIONS
-    
-    wrong_file_name:
-    {
-        fprintf(stderr, "\nError opening file %s\n", fname);
-        goto error;
-	}
-    
-    wrong_num_pos_entries:
-	{
-		printf("\nFile does not contain (kDIM positions), please check %s.\n", fname);
-		printf("\nParameters contained =  %u \n", count_scan);
-        goto error;
-	}
 
-    error:
-    {
-        fprintf(stderr, "\nProgram aborted!!!!\n\n");
-        return -1;
-    }
+ 	error:
+	{
+		fclose(fp);
+		return -1;
+    }      
 }
 
 int
@@ -127,8 +146,15 @@ MDLoadTurb
 	TurbField* turb_field
 )
 {
-    FILE *fp;
- 	if ( !(fp = fopen(fname, "r") ) ) goto wrong_file_name;
+
+   	FILE* fp;
+    check
+	(
+		 (fp = fopen (fname, "r")),
+		 "\nError opening file %s\n", 
+		 fname
+	);
+		
 	
     unsigned count_scan = 0;
     for (unsigned i = 0; i < K.PartNum; ++i)
@@ -136,32 +162,29 @@ MDLoadTurb
 		count_scan += fread(&turb_field[i], sizeof(double), kDIM, fp);
     } 
 
-    fclose(fp);
-	if(count_scan != (K.PartNum * kDIM) ) goto wrong_parameter_number;
+
+	check 
+	(
+		(count_scan == K.PartNum * kDIM),
+        "Wrong number of turbulence points in:\
+		\n%s\
+		\nnum = %u",
+		fname,
+		count_scan
+	);
+ 
 
 
 	fprintf (stderr, "\n%s read.\n", fname);
+    fclose(fp);
+
 	return 0;
 
-    wrong_parameter_number:
-    {
-    	fprintf (stderr, "\nFile does not contain kDIM parameters, please check %s.\n", fname);
-		fprintf (stderr, "\nParameters contained =  %u \n", count_scan);
-        goto error; 
-    }
-    
-    wrong_file_name:
-    {
-        fprintf(stderr, "\nError opening file %s\n", fname);
-        goto error;
-	}
-    
-        error:
-    {
-        fprintf(stderr, "\nProgram aborted!!!!\n\n");
-        return -1;
-    }
-
+ 	error:
+	{
+		fclose(fp);
+		return -1;
+    }    
 }
 
 int
@@ -173,9 +196,13 @@ MDLoadDir
 )
 {
 	//TODO check that K is initialised; check input is valid.
-    FILE *fp;
-
- 	if ( !(fp = fopen(fname, "r")) ) goto wrong_file_name;
+   	FILE* fp;
+    check
+	(
+		 (fp = fopen (fname, "r")),
+		 "\nError opening file %s\n", 
+		 fname
+	);
 		
     unsigned count_scan = 0;
 //TODO find tests for directions and turb velocities too
@@ -186,37 +213,28 @@ MDLoadDir
         //TODO disk I/O checks
 
 		fread(&dump, sizeof(double), kDIM, fp);
-        for (unsigned j = 0; j < kDIM; ++j)
-        {
-			count_scan += fread(&molecule[i].direction[j], sizeof(double), 1, fp);
-        }// molecule.position[] and molecule.direction[] are initialized		
+		count_scan += fread(&molecule[i].direction, sizeof(double), kDIM, fp);
     } 
-    fclose(fp);
 
-	if(count_scan != (K.PartNum * kDIM ) ) goto wrong_num_pos_entries;
-
+	check 
+	(
+		(count_scan == K.PartNum * kDIM),
+        "Wrong number of turbulence points in:\
+		\n%s\
+		\nnum = %u",
+		fname,
+		count_scan
+	);
+ 
 	fprintf (stderr, "\n%s read.\n", fname);
+    fclose(fp);
 	
 	return 0;
-//EXCEPTIONS
-    
-    wrong_file_name:
-    {
-        fprintf(stderr, "\nError opening file %s\n", fname);
-        goto error;
-	}
-    
-    wrong_num_pos_entries:
-	{
-		printf("\nFile does not contain kDIM directions, please check %s.\n", fname);
-		printf("\nParameters contained =  %u \n", count_scan);
-        goto error;
-	}
 
-    error:
-    {
-        fprintf(stderr, "\nProgram aborted!!!!\n\n");
-        return -1;
+	error:
+	{
+		fclose(fp);
+		return -1;
     }
 }
 //FIXME
@@ -234,11 +252,14 @@ MDLoadMol
 	assert (pre_offset < 2);
 	assert (post_offset < 2);
 	//TODO check that K is initialised; check input is valid.
-
-    FILE *fp;
-
- 	if ( !(fp = fopen(fname, "r")) ) goto wrong_file_name;
-		
+   	FILE* fp;
+    check
+	(
+		 !(fp = fopen (fname, "r")),
+		 "\nError opening file %s\n", 
+		 fname
+	);
+	
     unsigned count_scan = 0;
 //TODO find tests for directions and turb velocities too
 
@@ -255,31 +276,26 @@ MDLoadMol
 
     fclose(fp);
 
-	if(count_scan != (K.PartNum * kDIM ) ) goto wrong_num_pos_entries;
-
+	check 
+	(
+		!(count_scan == K.PartNum * kDIM),
+        "Wrong number of turbulence points in:\
+		\n%s\
+		\nnum = %u",
+		fname,
+		count_scan
+	);
+ 
 	fprintf (stderr, "\n%s read.\n", fname);
 	
 	return 0;
-//EXCEPTIONS
-    
-    wrong_file_name:
-    {
-        fprintf(stderr, "\nError opening file %s\n", fname);
-        goto error;
-	}
-    
-    wrong_num_pos_entries:
-	{
-		printf("\nFile does not contain kDIM directions, please check %s.\n", fname);
-		printf("\nParameters contained =  %u \n", count_scan);
-        goto error;
-	}
 
-    error:
-    {
-        fprintf(stderr, "\nProgram aborted!!!!\n\n");
-        return -1;
+	error:
+	{
+		fclose(fp);
+		return -1;
     }
+
 }
 
 

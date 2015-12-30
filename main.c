@@ -1,11 +1,8 @@
 #include <assert.h> //assert()
-#include <stdbool.h> //true, false
 #include <stdio.h>
-#include <math.h>
-#include <string.h>
 #include <stdlib.h>
 
-#include "debug.h"
+#include "debug.h" //check(), check_mem()
 
 #include "MDConstants.h" //MDConstants;
 #include "MDLoad.h" // MDLoad();
@@ -13,14 +10,17 @@
 #include "Molecule.h" // Molecule
 #include "Turbulence.h" //TurbConsts; TurbConstVecs
 
-#define anint(x) ((x >= 0.5) ? (1.0) : (x <= -0.5) ? (-1.0) : (0.0))
 
 //TODO documentation
 //TODO testsuite: wrong args, wrong input file, wrong data in input file, no memory
 
 
 int
-main (int argc, char *argv[])
+main
+(
+	int argc, 
+	char *argv[]
+)
 {
 	check (
 			argc == 2,
@@ -56,43 +56,43 @@ main (int argc, char *argv[])
 	check_mem (positions);
 
     turb_velocities = (TurbField**) calloc (K.SnapshotNum, sizeof (TurbField*) );
-    if (!turb_velocities) goto no_memory;
+	check_mem (turb_velocities);
 
     strain_rate = (Tensor2**) calloc (K.SnapshotNum, sizeof (Tensor2*) );
-    if (!strain_rate) goto no_memory;
+	check_mem (strain_rate);
 
 
     kraich_modes = (KraichnanMode***) calloc (K.SnapshotNum, sizeof (KraichnanMode**) );
-    if (!kraich_modes) goto no_memory;
+	check_mem (kraich_modes);
 
     for (unsigned n = 0; n < K.SnapshotNum; ++n) 
     {
         positions[n] = (Molecule*) calloc (K.PartNum, sizeof (Molecule) );
-        if (!positions[n]) goto no_memory;
+		check_mem (positions[n]);
 
         turb_velocities[n] = (TurbField*) calloc (K.PartNum, sizeof (TurbField) );
-        if (!turb_velocities[n]) goto no_memory;
+		check_mem (turb_velocities[n]);
 
         strain_rate[n] = (Tensor2*) calloc (K.PartNum, sizeof (Tensor2) );
-        if (!strain_rate[n]) goto no_memory;
-		//kraich_modes[n] = NULL;
+		check_mem (strain_rate[n]);
+
         kraich_modes[n] = (KraichnanMode**) calloc (K.PartNum, sizeof (KraichnanMode*) );
-        if (!kraich_modes[n]) goto no_memory;
+//TODO fix segfault		kraich_modes[n] = NULL;
+		check_mem (kraich_modes[n]);
 
         for (unsigned i = 0; i < K.PartNum; ++i)
         {
             kraich_modes[n][i] = (KraichnanMode*) calloc (K.NF, sizeof (KraichnanMode) );
-            if (!kraich_modes[n][i]) goto no_memory;
-
+			check_mem (kraich_modes[n][i]);
         }
 
     }
 
     turb = (TurbConsts*) calloc (K.NF, sizeof (TurbConsts) );
-    if (!turb) goto no_memory;
+	check_mem (turb);
 
     turb_vecs = (TurbConstVecs*) calloc (K.NF, sizeof (TurbConstVecs) );
-    if (!turb_vecs) goto no_memory;
+	check_mem (turb_vecs);
 
 
     //end allocation
@@ -101,23 +101,23 @@ main (int argc, char *argv[])
     char turb_pos[40];
     sprintf(turb_pos, "%s/turbulence.pos", work_dir);
 
-
-    if (TurbConstsLoad 
-        (   
-			K,
-            turb_pos,
-            turb,
-            turb_vecs
-        )
-	   ) { goto free_memory; }
-//TODO add exceptions in function
+    check
+		(
+			!TurbConstsLoad 
+			(   
+				K,
+				turb_pos,
+				turb,
+				turb_vecs
+			),
+		"TurbConstLoad failed"
+		);
     //TODO check headers
 
     //initialise turb constants ends
 
     //file reading starts
     fprintf(stderr, "\nReading data files...     ");
-    /*      loop over all files        */
 
     Tensor2 meanS = {{0}};
     for (unsigned t = 0, n = 0;  t < K.iteration_num; t += K.t_gap) 
@@ -129,35 +129,46 @@ main (int argc, char *argv[])
 
         char fname[60];
         sprintf (fname, "%s/t-%d.pos", work_dir, t);
-
-       if ( MDLoadPos
+		
+		check
+		(
+       		!MDLoadPos
             (
              K,
              fname,
              positions[n] 
-            )
-           ) { goto free_memory; }
-
+            ),
+			"MDLoadPos failed"
+		);
+      
        sprintf (fname, "%s/t-%d.pos", work_dir, t);
-       if ( MDLoadDir
+	   
+	   check
+	   (
+       		!MDLoadDir
             (
              K,
              fname,
              positions[n] 
-            )
-           ) { goto free_memory; }
-       
+            ),
+			"MDLoadDir failed"
+       );
        sprintf (fname, "%s/turbField-%d.pos", work_dir, t);
-       if ( MDLoadTurb
+
+	   check
+	   (
+       		!MDLoadTurb
             (
              K,
              fname,
              turb_velocities[n] 
-            )
-           ) { goto free_memory; }
+            ),
+			"MDLoadTurb failed"
+		);
 
-
-        if ( InitializeTurbModes
+		check
+		(
+        	 !InitializeTurbModes
              (
                 K,
                 positions[n],
@@ -165,18 +176,23 @@ main (int argc, char *argv[])
                 turb,
                 kraich_modes[n],
                 t
-             )
-           ) { goto free_memory; }
-/*        if ( n > 0)
+             ),
+			 "InitializeTurbModes failed"
+		);
+/*
+        if ( n > 0)
         {
-            if ( InitializeTurbVelocities
+            check
+			( 
+				 !InitializeTurbVelocities
                  (
                    K,
                    turb_vecs,
-                   kraich_modes[n],
+    			   (const KraichnanMode**) kraich_modes[n],
                    turb_velocities[n] 
-                 )
-               ) { goto free_memory; }
+                 ),
+				 "InitializeTurbVelocities failed"
+			 );
         }
 */
 //FIXME generated turb velocities are not the same as the ones contained in the .pos!
@@ -204,13 +220,17 @@ main (int argc, char *argv[])
          (const TurbField**) turb_velocities
         );
 
-    if( MeanStrainRateTensor
+     check
+	 (
+
+	 	!MeanStrainRateTensor
         (
              (const Tensor2**) strain_rate,
              (const MDConstants) K,
              meanS
-        )
-      ) goto free_memory;
+        ),
+		"MeanStrainRateTensor failed"
+	 );
 
     for (unsigned k = 0; k < kDIM; ++k)
     {
@@ -220,16 +240,10 @@ main (int argc, char *argv[])
     }
 
     fprintf (stdout, "Mean kinetic energy = %lf", mean_kinetic_energy);
-	goto free_memory;
 
-//EXCEPTIONS
-	no_memory:
-	{
-		fprintf(stderr, "no memory\n");
-		goto free_memory;
-	}
+	return 0;
 
-    free_memory:
+    error:
 	{
 		for (unsigned n = 0; n < K.SnapshotNum; n++) 
 		{
@@ -271,15 +285,6 @@ main (int argc, char *argv[])
 		free (kraich_modes);
 		kraich_modes = NULL;
 
-		goto exit;
-	}
-
-    exit:
-    {
-        return 0;
-    }
-	error:
-	{
 		return -1;
 	}
 }
