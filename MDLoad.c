@@ -51,11 +51,10 @@ TurbConstsLoad
 
 
 int
-MDLoad 
+MDLoadPos
 (
     const MDConstants K, 
     Molecule* molecule, 
-	TurbField* turb_field,
     const unsigned next_loop //current timestep
 )
 {
@@ -89,8 +88,8 @@ MDLoad
             }//pos[] is loaded with values within the valid range
 
             molecule[i].position[j] = K.side_minus1[j] * pos[j];
-
-            count_scan += fread(&molecule[i].direction[j], sizeof(double), 1, fp);
+			double dump;
+            fread(&dump, sizeof(double), 1, fp);
         }// molecule.position[] and molecule.direction[] are initialized		
 
     } 
@@ -98,27 +97,61 @@ MDLoad
 
     fclose(fp);
 
-	if(count_scan != (K.PartNum * kDIM * 2) ) goto wrong_num_pos_entries;
+	if(count_scan != (K.PartNum * kDIM) ) goto wrong_num_pos_entries;
 
 	fprintf (stderr, "\n%s read.\n", fname);
 	
+	return 0;
+//EXCEPTIONS
+    
+    wrong_file_name:
+    {
+        fprintf(stderr, "\nError opening file %s\n", fname);
+        goto error;
+	}
+    
+    wrong_num_pos_entries:
+	{
+		printf("\nFile does not contain (3 positions), please check %s.\n", fname);
+		printf("\nParameters contained =  %u \n", count_scan);
+        goto error;
+	}
+
+    error:
+    {
+        fprintf(stderr, "\nProgram aborted!!!!\n\n");
+        return -1;
+    }
+}
+
+int
+MDLoadTurb 
+(
+    const MDConstants K, 
+	TurbField* turb_field,
+    const unsigned next_loop //current timestep
+)
+{
+    FILE *fp;
+	char fname[60];	
+
 	sprintf(fname,"%s/turbField-%d.pos",work_dir, next_loop);
     fp = fopen(fname, "r");
  	if ( !(fp = fopen(fname, "r") ) ) goto wrong_file_name;
 	
-    count_scan = 0;
-
+    unsigned count_scan = 0;
     for (unsigned i = 0; i < K.PartNum; ++i)
     {
-        count_scan += fread(&turb_field[i], sizeof(double), kDIM, fp);
+            count_scan += fread(&turb_field[i], sizeof(double), kDIM, fp);
     } 
 
     fclose(fp);
 	if(count_scan != (K.PartNum * kDIM) ) goto wrong_parameter_number;
 
+
 	fprintf (stderr, "\n%s read.\n", fname);
 	return 0;
-//EXCEPTIONS
+
     wrong_parameter_number:
     {
     	fprintf (stderr, "\nFile does not contain 3 parameters, please check %s.\n", fname);
@@ -132,9 +165,67 @@ MDLoad
         goto error;
 	}
     
+        error:
+    {
+        fprintf(stderr, "\nProgram aborted!!!!\n\n");
+        return -1;
+    }
+
+}
+
+int
+MDLoadDir
+(
+    const MDConstants K, 
+    Molecule* molecule, 
+    const unsigned next_loop //current timestep
+)
+{
+	//TODO check that K is initialised; check input is valid.
+	assert (next_loop <= K.iteration_num);
+
+
+    char fname[60];
+    FILE *fp;
+
+	sprintf(fname,"%s/t-%d.pos",work_dir, next_loop);
+ 	if ( !(fp = fopen(fname, "r")) ) goto wrong_file_name;
+		
+    unsigned count_scan = 0;
+//TODO find tests for directions and turb velocities too
+
+	double dump;
+    for (unsigned i = 0; i < K.PartNum; ++i)
+    {
+        //TODO disk I/O checks
+
+        for (unsigned j = 0; j < kDIM; ++j)
+        {
+            fread(&dump, sizeof(double), 1, fp);
+			count_scan += fread(&molecule[i].direction[j], sizeof(double), 1, fp);
+        }// molecule.position[] and molecule.direction[] are initialized		
+
+    } 
+
+
+    fclose(fp);
+
+	if(count_scan != (K.PartNum * kDIM ) ) goto wrong_num_pos_entries;
+
+	fprintf (stderr, "\n%s read.\n", fname);
+	
+	return 0;
+//EXCEPTIONS
+    
+    wrong_file_name:
+    {
+        fprintf(stderr, "\nError opening file %s\n", fname);
+        goto error;
+	}
+    
     wrong_num_pos_entries:
 	{
-		printf("\nFile does not contain 6 parameters (3 positions and 3 directions), please check %s.\n", fname);
+		printf("\nFile does not contain 3 directions, please check %s.\n", fname);
 		printf("\nParameters contained =  %u \n", count_scan);
         goto error;
 	}
@@ -145,4 +236,68 @@ MDLoad
         return -1;
     }
 }
+//FIXME
+//TODO refactor and extend
+int
+MDLoadMol
+(
+    const MDConstants K, 
+	const char fname[],
+	const unsigned pre_offset,
+	const unsigned post_offset,
+    Molecule* molecule
+)
+{
+	assert (pre_offset < 2);
+	assert (post_offset < 2);
+	//TODO check that K is initialised; check input is valid.
+
+    FILE *fp;
+
+ 	if ( !(fp = fopen(fname, "r")) ) goto wrong_file_name;
+		
+    unsigned count_scan = 0;
+//TODO find tests for directions and turb velocities too
+
+	double dump[kDIM];
+    for (unsigned i = 0; i < K.PartNum; ++i)
+    {
+        //TODO disk I/O checks
+
+        fread(&dump, sizeof(double), pre_offset*kDIM, fp);
+		count_scan += fread(&molecule[i].position, sizeof(double), 3, fp);
+        count_scan += fread(&dump, sizeof(double), post_offset*kDIM, fp);
+		} 
+
+
+    fclose(fp);
+
+	if(count_scan != (K.PartNum * kDIM ) ) goto wrong_num_pos_entries;
+
+	fprintf (stderr, "\n%s read.\n", fname);
+	
+	return 0;
+//EXCEPTIONS
+    
+    wrong_file_name:
+    {
+        fprintf(stderr, "\nError opening file %s\n", fname);
+        goto error;
+	}
+    
+    wrong_num_pos_entries:
+	{
+		printf("\nFile does not contain 3 directions, please check %s.\n", fname);
+		printf("\nParameters contained =  %u \n", count_scan);
+        goto error;
+	}
+
+    error:
+    {
+        fprintf(stderr, "\nProgram aborted!!!!\n\n");
+        return -1;
+    }
+}
+
+
 

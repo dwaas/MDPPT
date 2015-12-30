@@ -117,14 +117,34 @@ main (int argc, char *argv[])
         fflush(NULL);
         //TODO load turbulence.pos only once!!
 
-       if ( MDLoad 
+        char fname[60];
+        sprintf(fname,"%s/t-%d.pos",work_dir, t);
+
+       if ( MDLoadPos
             (
              K,
              positions[n],
+             t 
+            )
+           ) { goto free_memory; }
+
+       if ( MDLoadDir
+            (
+             K,
+             positions[n],
+             t 
+            )
+           ) { goto free_memory; }
+
+
+       if ( MDLoadTurb
+            (
+             K,
              turb_velocities[n], 
              t 
             )
            ) { goto free_memory; }
+
 
         if ( InitializeTurbModes
              (
