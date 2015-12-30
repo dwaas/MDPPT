@@ -77,9 +77,9 @@ MDLoadPos
     {
         //TODO disk I/O checks
 
+		count_scan += fread(&pos, sizeof(double), kDIM, fp);
         for (unsigned j = 0; j < kDIM; ++j)
         {
-            count_scan += fread(&pos[j], sizeof(double), 1, fp);
             if ( pos[j] < K.L[j] / (-2.0) || pos[j] > K.L[j] / 2.0 )
             {
                 printf("\nThe particles in the %u-th positions \
@@ -90,7 +90,7 @@ MDLoadPos
 
             molecule[i].position[j] = K.side_minus1[j] * pos[j];
         }// molecule.position[] and molecule.direction[] are initialized		
-		fread(&dump, sizeof(double), 3, fp);
+		fread(&dump, sizeof(double), kDIM, fp);
     } 
 
 
@@ -111,7 +111,7 @@ MDLoadPos
     
     wrong_num_pos_entries:
 	{
-		printf("\nFile does not contain (3 positions), please check %s.\n", fname);
+		printf("\nFile does not contain (kDIM positions), please check %s.\n", fname);
 		printf("\nParameters contained =  %u \n", count_scan);
         goto error;
 	}
@@ -153,7 +153,7 @@ MDLoadTurb
 
     wrong_parameter_number:
     {
-    	fprintf (stderr, "\nFile does not contain 3 parameters, please check %s.\n", fname);
+    	fprintf (stderr, "\nFile does not contain kDIM parameters, please check %s.\n", fname);
 		fprintf (stderr, "\nParameters contained =  %u \n", count_scan);
         goto error; 
     }
@@ -198,7 +198,7 @@ MDLoadDir
     {
         //TODO disk I/O checks
 
-		fread(&dump, sizeof(double), 3, fp);
+		fread(&dump, sizeof(double), kDIM, fp);
         for (unsigned j = 0; j < kDIM; ++j)
         {
 			count_scan += fread(&molecule[i].direction[j], sizeof(double), 1, fp);
@@ -221,7 +221,7 @@ MDLoadDir
     
     wrong_num_pos_entries:
 	{
-		printf("\nFile does not contain 3 directions, please check %s.\n", fname);
+		printf("\nFile does not contain kDIM directions, please check %s.\n", fname);
 		printf("\nParameters contained =  %u \n", count_scan);
         goto error;
 	}
@@ -261,7 +261,7 @@ MDLoadMol
         //TODO disk I/O checks
 
         fread(&dump, sizeof(double), pre_offset*kDIM, fp);
-		count_scan += fread(&molecule[i].position, sizeof(double), 3, fp);
+		count_scan += fread(&molecule[i].position, sizeof(double), kDIM, fp);
         count_scan += fread(&dump, sizeof(double), post_offset*kDIM, fp);
 		} 
 
@@ -283,7 +283,7 @@ MDLoadMol
     
     wrong_num_pos_entries:
 	{
-		printf("\nFile does not contain 3 directions, please check %s.\n", fname);
+		printf("\nFile does not contain kDIM directions, please check %s.\n", fname);
 		printf("\nParameters contained =  %u \n", count_scan);
         goto error;
 	}
