@@ -72,6 +72,7 @@ MDLoadPos
 //TODO find tests for directions and turb velocities too
 
     double pos[kDIM];//temp variable
+	double dump[kDIM];
     for (unsigned i = 0; i < K.PartNum; ++i)
     {
         //TODO disk I/O checks
@@ -88,10 +89,8 @@ MDLoadPos
             }//pos[] is loaded with values within the valid range
 
             molecule[i].position[j] = K.side_minus1[j] * pos[j];
-			double dump;
-            fread(&dump, sizeof(double), 1, fp);
         }// molecule.position[] and molecule.direction[] are initialized		
-
+		fread(&dump, sizeof(double), 3, fp);
     } 
 
 
@@ -142,7 +141,7 @@ MDLoadTurb
     unsigned count_scan = 0;
     for (unsigned i = 0; i < K.PartNum; ++i)
     {
-            count_scan += fread(&turb_field[i], sizeof(double), kDIM, fp);
+		count_scan += fread(&turb_field[i], sizeof(double), kDIM, fp);
     } 
 
     fclose(fp);
@@ -194,20 +193,17 @@ MDLoadDir
     unsigned count_scan = 0;
 //TODO find tests for directions and turb velocities too
 
-	double dump;
+	double dump[kDIM];
     for (unsigned i = 0; i < K.PartNum; ++i)
     {
         //TODO disk I/O checks
 
+		fread(&dump, sizeof(double), 3, fp);
         for (unsigned j = 0; j < kDIM; ++j)
         {
-            fread(&dump, sizeof(double), 1, fp);
 			count_scan += fread(&molecule[i].direction[j], sizeof(double), 1, fp);
         }// molecule.position[] and molecule.direction[] are initialized		
-
     } 
-
-
     fclose(fp);
 
 	if(count_scan != (K.PartNum * kDIM ) ) goto wrong_num_pos_entries;
