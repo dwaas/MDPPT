@@ -1,9 +1,8 @@
 #include <assert.h> //assert()
 #include <stdio.h>
-#include <stdlib.h>
 
+#include "Allocate.h" //FREE
 #include "debug.h" //check(), check_mem()
-
 #include "MDConstants.h" //MDConstants;
 #include "MDLoad.h" // MDLoad();
 #include "MDPostProcessing.h" // MeanKineticEnergy()
@@ -13,7 +12,6 @@
 
 //TODO documentation
 //TODO testsuite: wrong args, wrong input file, wrong data in input file, no memory
-
 
 int
 main
@@ -31,16 +29,6 @@ main
     char work_dir[40];
 	sprintf (work_dir, "%s", argv[1]);
 
-
-    Molecule** positions = NULL;
-    TurbField** turb_velocities = NULL;
-    Tensor2** strain_rate = NULL;    
-
-    TurbConsts* turb = NULL;
-    TurbConstVecs* turb_vecs = NULL;
-    KraichnanMode*** kraich_modes = NULL;
-
-
     //CONSTANTS
     MDConstants K;
     char input_dat[60];
@@ -51,51 +39,25 @@ main
 			"Constant init failed" 
 		);
 
-    //allocate 
-    positions = (Molecule**) calloc (K.SnapshotNum, sizeof (Molecule*) );
-	check_mem (positions);
+    //declare
+    KraichnanMode*** kraich_modes = NULL;
 
-    turb_velocities = (TurbField**) calloc (K.SnapshotNum, sizeof (TurbField*) );
-	check_mem (turb_velocities);
+    Molecule** positions = NULL;
+    TurbField** turb_velocities = NULL;
+    Tensor2** strain_rate = NULL;    
 
-    strain_rate = (Tensor2**) calloc (K.SnapshotNum, sizeof (Tensor2*) );
-	check_mem (strain_rate);
+    TurbConsts* turb = NULL;
+    TurbConstVecs* turb_vecs = NULL;
 
+   //allocate 
+    ALLOC3D (kraich_modes, K.SnapshotNum, K.PartNum, K.NF);
 
-    kraich_modes = (KraichnanMode***) calloc (K.SnapshotNum, sizeof (KraichnanMode**) );
-	check_mem (kraich_modes);
+    ALLOC2D (positions, K.SnapshotNum, K.PartNum);
+    ALLOC2D (turb_velocities, K.SnapshotNum, K.PartNum);
+    ALLOC2D (strain_rate, K.SnapshotNum, K.PartNum);
 
-    for (unsigned n = 0; n < K.SnapshotNum; ++n) 
-    {
-        positions[n] = (Molecule*) calloc (K.PartNum, sizeof (Molecule) );
-		check_mem (positions[n]);
-
-        turb_velocities[n] = (TurbField*) calloc (K.PartNum, sizeof (TurbField) );
-		check_mem (turb_velocities[n]);
-
-        strain_rate[n] = (Tensor2*) calloc (K.PartNum, sizeof (Tensor2) );
-		check_mem (strain_rate[n]);
-
-        kraich_modes[n] = (KraichnanMode**) calloc (K.PartNum, sizeof (KraichnanMode*) );
-//TODO fix segfault		kraich_modes[n] = NULL;
-		check_mem (kraich_modes[n]);
-
-        for (unsigned i = 0; i < K.PartNum; ++i)
-        {
-            kraich_modes[n][i] = (KraichnanMode*) calloc (K.NF, sizeof (KraichnanMode) );
-			check_mem (kraich_modes[n][i]);
-        }
-
-    }
-
-    turb = (TurbConsts*) calloc (K.NF, sizeof (TurbConsts) );
-	check_mem (turb);
-
-    turb_vecs = (TurbConstVecs*) calloc (K.NF, sizeof (TurbConstVecs) );
-	check_mem (turb_vecs);
-
-
-    //end allocation
+    ALLOC (turb, K.NF);
+    ALLOC (turb_vecs, K.NF);
 
     //Initialise turb constants
     char turb_pos[40];
@@ -241,49 +203,27 @@ main
 
     fprintf (stdout, "Mean kinetic energy = %lf", mean_kinetic_energy);
 
+    FREE3D (kraich_modes, K.PartNum, K.SnapshotNum);
+
+    FREE2D (positions, K.SnapshotNum);
+    FREE2D (turb_velocities, K.SnapshotNum);
+    FREE2D (strain_rate, K.SnapshotNum);
+
+    FREE (turb);
+    FREE (turb_vecs);
+
 	return 0;
 
     error:
 	{
-		for (unsigned n = 0; n < K.SnapshotNum; n++) 
-		{
-			free (positions[n]);
-			positions[n] = NULL;
+        FREE3D (kraich_modes, K.PartNum, K.SnapshotNum);
 
-			free (turb_velocities[n]);
-			turb_velocities[n] = NULL;
+        FREE2D (positions, K.SnapshotNum);
+        FREE2D (turb_velocities, K.SnapshotNum);
+        FREE2D (strain_rate, K.SnapshotNum);
 
-			free (strain_rate[n]);
-			strain_rate[n] = NULL;
-
-
-			for (unsigned i = 0; i < K.PartNum; ++i)
-			{
-				free (kraich_modes[n][i]);
-				kraich_modes[n][i] = NULL;
-			}
-
-			free (kraich_modes[n]);
-			kraich_modes[n] = NULL;
-		}
-
-		free(positions);
-		positions = NULL;	
-
-		free(turb_velocities);
-		turb_velocities = NULL;	
-
-		free(strain_rate);
-		strain_rate = NULL;	
-
-		free (turb);
-		turb = NULL;
-
-		free (turb_vecs);
-		turb_vecs = NULL;
-
-		free (kraich_modes);
-		kraich_modes = NULL;
+		FREE (turb);
+		FREE (turb_vecs);
 
 		return -1;
 	}
