@@ -6,6 +6,7 @@
 
 
 
+#include "Allocate.h" //FREE
 #include "debug.h"
 #include "MDConstants.h" //MDConstants
 #include "Molecule.h" //Molecule
@@ -87,9 +88,8 @@ MeanStrainRateTensor
     Tensor2 meanS	
 )
 {
-	Tensor2* tempS = (Tensor2*) calloc (K.SnapshotNum, sizeof (Tensor2) );
-	check_mem (tempS);
-
+	Tensor2* tempS = NULL;
+    ALLOC (tempS, K.SnapshotNum); 
 
 	for (unsigned t = 0; t < K.SnapshotNum; ++t)
 	{
@@ -99,11 +99,13 @@ MeanStrainRateTensor
 
 
 	//TODO assert that meanS is initialized to 0
+
+    FREE (tempS);
 	return 0;
 
 	error:
 	{
-		if (tempS) free (tempS);
+		FREE (tempS);
 		return -1;
 	}
 }
