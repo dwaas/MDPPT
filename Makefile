@@ -3,7 +3,9 @@ FLAGS= -Wvector-operation-performance -Wshadow -Wsuggest-attribute=const -Wall -
 ENDFLAGS= -lm -lgomp 
 OBJS=main.o MDLoad.o MDConstants.o MDPostProcessing.o Turbulence.o
 DEPS= MDLoad.h MDConstants.h Turbulence.h Molecule.h MDPostProcessing.h debug.h
+
 EXE=post_proc
+TESTDIR=tests/
 ARGS= ../../testrun
 
 ifeq ($(debug), 1)
@@ -17,6 +19,10 @@ debug=0
 all: $(EXE)
 
 #debug and profiling
+.PHONY: check
+check: clean $(EXE)
+	cram -v $(TESTDIR)/*.t 
+
 .PHONY: debug
 debug: clean $(EXE)
 	gdb --args ./$(EXE) $(ARGS) 
