@@ -20,7 +20,7 @@ all: $(EXE)
 
 #debug and profiling
 .PHONY: check
-check: clean $(EXE)
+check: clean_tests $(EXE)
 	cram -v $(TESTDIR)/*.t 
 
 .PHONY: debug
@@ -32,19 +32,28 @@ mem_check: clean $(EXE)
 	valgrind -v --leak-check=full --show-leak-kinds=all ./$(EXE) $(ARGS)
 
 .PHONY: prof
-prof: clean $(EXE)
+prof: clean_prof $(EXE)
 	valgrind --tool=callgrind ./$(EXE) $(ARGS)
 
 .PHONY: time
 time: clean $(EXE)
 	time ./$(EXE) $(ARGS)	
-#
-.PHONY: clean
-clean: 
-	rm -f *.o $(EXE) gmon.out prof *.gcov *gcno
 
-.PHONY: new
-new:
+#CLEAN
+.PHONY: clean
+clean: clean_prof clean_tests
+	rm -f *.o $(EXE) 
+
+.PHONY: clean_tests
+clean_tests:
+	rm -f $(TESTDIR)/*.err
+
+.PHONY: clean_prof
+clean_prof:
+	rm -f gmon.out prof *.gcov *gcno
+
+.PHONY: clean_sim
+clean_sim:
 	rm -f *.S output.dat *.pos
 
 $(EXE): $(OBJS)
