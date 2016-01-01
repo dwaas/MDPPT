@@ -6,18 +6,22 @@
 #include "MDConstants.h"
 
 int
-Initialize (MDConstants* K, const char fname[])
+Initialize 
+(
+	MDConstants* K, 
+	const char fname[]
+)
 {
 	FILE *fp = NULL;
 	fp = fopen(fname, "r");
 	check (fp, "\nWrong filename passed: %s\n", fname);
-		
-	
+
+
 	unsigned count_scan = 0;
 
 	count_scan += fscanf(fp, "%u", &(K->iteration_num) );
-    CountReadUnsigned (&count_scan, fp, K->N, kDIM);
-    CountReadDouble (&count_scan, fp, K->L, kDIM);
+	CountReadUnsigned (&count_scan, fp, K->N, kDIM);
+	CountReadDouble (&count_scan, fp, K->L, kDIM);
 	count_scan += fscanf(fp, "%lf", &(K->dcut) );
 	count_scan += fscanf(fp, "%s", (K->starting_branch) );
 	count_scan += fscanf(fp, "%lf", &(K->v_0) ); /* LC alignment: constant velocity*/
@@ -30,62 +34,62 @@ Initialize (MDConstants* K, const char fname[])
 
 	check ( (count_scan == 17), 
 			"\nWrong number of input parameters, please check:\
-			 \n%s\n", 
+			\n%s\n", 
 			fname
-		  );
-	
-//TODO range evaluation 
+	      );
+
+	//TODO range evaluation 
 
 	bool invalid_input = K->iteration_num <= 0 ||
-								K->dcut <= 0 ||
-								K->v_0 < 0 || 
-								K->delta_t <= 0 ||
-								K->gamma_rel <= 0 ||
-								K->kappa < 0 || K->NF == 0 || 
-								K->t_gap <= 0 || K->deltaS <= 0;
+		K->dcut <= 0 ||
+		K->v_0 < 0 || 
+		K->delta_t <= 0 ||
+		K->gamma_rel <= 0 ||
+		K->kappa < 0 || K->NF == 0 || 
+		K->t_gap <= 0 || K->deltaS <= 0;
 
-    for (unsigned j = 0; j < kDIM; ++j)
-    {
-        invalid_input = invalid_input || (K->N[j] <= 0);
-        invalid_input = invalid_input || (K->L[j] <= 0);
-    }
+	for (unsigned j = 0; j < kDIM; ++j)
+	{
+		invalid_input = invalid_input || (K->N[j] <= 0);
+		invalid_input = invalid_input || (K->L[j] <= 0);
+	}
 
-//kappa and v_0 can be zero
+	//kappa and v_0 can be zero
 	check (
 			!invalid_input,
-			 "\nInvalid value ranges, please check:\
-			 \n%s.\n",
-			 fname
-		  );
-	
+			"\nInvalid value ranges, please check:\
+			\n%s.\n",
+			fname
+	      );
+
 	fclose(fp);
-    fp = NULL; //TODO review
- 
-//READ INPUT.DAT ENDS
+	fp = NULL; //TODO review
+
+	//READ INPUT.DAT ENDS
 	CalcConsts (K); //Derived constants
 
 	fprintf
-    (
-        stderr, 
-        "\niteration num = %u t_gap = %u \
-         \nsnapshot number = %i\
-         \nparticle num = %i \n",
-        K->iteration_num, K->t_gap, 
-        K->SnapshotNum, 
-        K->PartNum
-    );
+		(
+		 stderr, 
+		 "\niteration num = %u t_gap = %u \
+		 \nsnapshot number = %i\
+		 \nparticle num = %i \n",
+		 K->iteration_num, K->t_gap, 
+		 K->SnapshotNum, 
+		 K->PartNum
+		);
 
-//TODO unroll dimensional loops
-    PrintVals ("L_%u = %f\t", K->L, kDIM);
-    PrintVals ("side_minus1_%u = %f\t", K->side_minus1, kDIM);
+	//TODO unroll dimensional loops
+	PrintVals ("L_%u = %f\t", K->L, kDIM);
+	PrintVals ("side_minus1_%u = %f\t", K->side_minus1, kDIM);
 
-    return 0;
+	return 0;
 
-	error:
-    {
-        fprintf(stderr, "\nProgram aborted!!!!\n\n");
-        return -1;
-    }
+error:
+	{
+		fprintf(stderr, "\nProgram aborted!!!!\n\n");
+		return -1;
+	}
 }
 
 void
