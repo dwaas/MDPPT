@@ -85,7 +85,6 @@ Known Bugs
 **********
 
 * MDPPT doesn't reproduce exactly the same turbulent directions as the simulation tool
-* deallocating resources after errors cause segfaults
 
 Missing features
 ****************
