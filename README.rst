@@ -32,6 +32,10 @@ where kDIM is the number of dimensions the system has.
 CAUTION:
 before running the program make sure that in main.c kDIM has the correct value.
 
+NOTE:
+positions in .pos files are in [-L/2, L/2] (where L is the box length).
+During calculations they are stored in memory in the [-0.5, 0.5] interval.
+
 Outputs
 =======
 
