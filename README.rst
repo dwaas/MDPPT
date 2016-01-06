@@ -24,15 +24,19 @@ The INPUT of MDPPT is a folder in which an input.dat and .pos files are found.
 The input.dat has a very specific format used by the MDConstants library.
 
 The .pos files are binary files where the format is:
+
 - kDIM positions followed by kDIM directions OR
 - kDIM positions OR (TODO)
 - kDIM directions (TODO)
+
 where kDIM is the number of dimensions the system has.
 
 CAUTION:
+
 before running the program make sure that in main.c kDIM has the correct value.
 
 NOTE:
+
 positions in .pos files are in [-L/2, L/2] (where L is the box length).
 During calculations they are stored in memory in the [-0.5, 0.5] interval.
 
@@ -42,6 +46,29 @@ Outputs
 The outputs are printed to stdout by design.
 To print them to file, simply pipe the output where desired.
 (TODO bash script)
+
+NOTE
+
+The post_processing quantities are calculated at the next possible timestep.
+
+e.g. if the available snapshots are 
+
+t = 5000, 10000, ..., 95000, 100000; 
+
+then the quantities will be calculated at 
+
+t' = 5001, 10001, ..., 95001, 100001;
+
+        COMMENT FOR THE CODER:
+
+        This doesn't pose any physical problem but it affects the implementation.
+
+        COMMENT FOR THE PHYSICIST:
+
+        - Sampling at t or t+1 is irrelevant as long as there's consistency in the sampling.
+        - Generally the sampled quantities are averaged so the single fluctuation MUST not be relevant.
+
+(read also Modularity and Extensions)
 
 Modularity and Extensions
 =========================
@@ -81,9 +108,6 @@ also make check will require the following tools:
 
 * cram: to run tests
 * valgrind: to profile and check for memleaks
-
-TODO
-====
 
 Known Bugs
 **********

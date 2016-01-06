@@ -142,7 +142,7 @@ main
                          ),
                          "InitializeTurbModes failed"
                         );
-                /*
+                
                    if ( n > 0)
                    {
                    check
@@ -151,13 +151,14 @@ main
                    (
                    K,
                    turb_vecs,
+                   turb,
                    (const KraichnanMode**) kraich_modes[n],
                    turb_velocities[n] 
                    ),
                    "InitializeTurbVelocities failed"
                    );
                    }
-                   */
+                   
                 //FIXME generated turb velocities are not the same as the ones contained in the .pos!
 
                 //init strain rate tensor
@@ -168,6 +169,7 @@ main
                                  strain_rate[n][i],
                                  K,
                                  turb_vecs,
+                                 turb,
                                  kraich_modes[n][i]
                                 );
                 } 

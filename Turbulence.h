@@ -1,6 +1,6 @@
 #ifndef TURBULENCE_H
 #define TURBULENCE_H
-
+//TODO avoid to forget absolute values
 //1 for each mode, absolute values
 struct turb_var 
 {
@@ -12,8 +12,9 @@ struct turb_var
 
 typedef struct turb_var TurbConsts;
 
-//only for kraichnan's method.
 //1 for each mode
+//all turb_vecs are unit vectors (and cross products of them
+//they need to be multiplied by their modulus found in turb_var
 struct turb_vecs_var
 {
     double kn[kDIM]; // k_n unit vectors
@@ -60,6 +61,7 @@ InitializeTurbVelocities
 (
 	const MDConstants K,
 	const TurbConstVecs* turb_vecs,
+	const TurbConsts* turb,
 	const KraichnanMode** kraich_modes,
 	TurbField* turb_velocities
 );
@@ -71,6 +73,7 @@ InitializeStrainRateTensor
 	Tensor2 S,
 	const MDConstants K,
 	const TurbConstVecs* turb_vecs,
+	const TurbConsts* turb,
 	const KraichnanMode* modes
 );
 

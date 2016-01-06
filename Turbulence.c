@@ -24,7 +24,6 @@ InitializeTurbModes
 	const unsigned t
 )
 {
-	assert (t < K.iteration_num);
 
 	//TODO profile & parallelise
 	//TODO check valid input/output 
@@ -51,6 +50,10 @@ schedule(dynamic, 5000)
 			//cos and sin
 			kraich_modes[i][modeIndex].sin = sin (Omega_n);
 			kraich_modes[i][modeIndex].cos = cos (Omega_n);
+                       assert (kraich_modes[i][modeIndex].sin < 1);
+                       assert (kraich_modes[i][modeIndex].sin > -1);
+                       assert (kraich_modes[i][modeIndex].cos < 1);
+                       assert (kraich_modes[i][modeIndex].cos > -1);
 		}
 	}
 	return 0;
@@ -63,6 +66,7 @@ InitializeStrainRateTensor
 	Tensor2 S,
 	const MDConstants K,
 	const TurbConstVecs* turb_vecs,
+	const TurbConsts* turb,
 	const KraichnanMode* modes
 )
 {
@@ -72,8 +76,8 @@ InitializeStrainRateTensor
 		{
 			for (unsigned j = 0; j < kDIM; ++j)
 			{
-				S[i][j] -= turb_vecs->c1n[i] * turb_vecs->kn[j] * modes[f].sin;
-				S[i][j] += turb_vecs->c2n[i] * turb_vecs->kn[j] * modes[f].cos;
+				S[i][j] -= turb[f].cabs * turb_vecs->c1n[i] * turb_vecs->kn[j] * modes[f].sin;
+				S[i][j] += turb[f].cabs * turb_vecs->c2n[i] * turb_vecs->kn[j] * modes[f].cos;
 			}
 		}
 	}
@@ -115,6 +119,7 @@ InitializeTurbVelocities
 (
 	const MDConstants K,
 	const TurbConstVecs* turb_vecs,
+	const TurbConsts* turb,
 	const KraichnanMode** kraich_modes,
 	TurbField* turb_velocities
 )
@@ -126,8 +131,8 @@ InitializeTurbVelocities
 		{
 			for (unsigned f = 0; f < K.NF; ++f)
 			{
-				vel[j] += turb_vecs[f].c1n[j] * kraich_modes[i][f].cos;
-				vel[j] += turb_vecs[f].c2n[j] * kraich_modes[i][f].sin;
+				vel[j] += turb[f].cabs * turb_vecs[f].c1n[j] * kraich_modes[i][f].cos;
+				vel[j] += turb[f].cabs * turb_vecs[f].c2n[j] * kraich_modes[i][f].sin;
 			}	
 			if (turb_velocities[i].direction[j] != vel[j])
 			{
